@@ -53,34 +53,55 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="col-12 col-lg-8">
                         <div class="row">
                             <div class="col-6 col-lg-4 col-md-6">
+                                <?php
+                                /** @var mysqli $conn */
+                                include('./db.php');
+                                // Count total staffs
+                                $total_staffs_query = mysqli_query($conn, "SELECT COUNT(*) AS total_staffs FROM staffs");
+                                $total_staffs_fetch = mysqli_fetch_assoc($total_staffs_query);
+                                $total_staffs = $total_staffs_fetch['total_staffs'];
+                                ?>
+
                                 <div class="card">
                                     <div class="card-body px-3 py-4-5">
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="stats-icon purple">
-                                                    <i class="iconly-boldShow"></i>
+                                                    <i class="iconly-boldProfile"></i>
                                                 </div>
                                             </div>
                                             <div class="col-md-8">
-                                                <h6 class="text-muted font-semibold">Profile Views</h6>
-                                                <h6 class="font-extrabold mb-0">112.000</h6>
+                                                <h6 class="text-muted font-semibold">Total Staffs</h6>
+                                                <h6 class="font-extrabold mb-0">
+                                                    <?php echo $total_staffs; ?>
+                                                </h6>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6 col-lg-4 col-md-6">
+                                <?php
+                                /** @var mysqli $conn */
+                                include('./db.php');
+                                // Count total branches
+                                $total_branches_query = mysqli_query($conn, "SELECT COUNT(*) AS total_branches FROM branches");
+                                $total_branches_fetch = mysqli_fetch_assoc($total_branches_query);
+                                $total_branches = $total_branches_fetch['total_branches'];
+                                ?>
                                 <div class="card">
                                     <div class="card-body px-3 py-4-5">
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="stats-icon blue">
-                                                    <i class="iconly-boldProfile"></i>
+                                                    <i class="iconly-boldHome"></i>
                                                 </div>
                                             </div>
                                             <div class="col-md-8">
-                                                <h6 class="text-muted font-semibold">Followers</h6>
-                                                <h6 class="font-extrabold mb-0">183.000</h6>
+                                                <h6 class="text-muted font-semibold">Total Branches</h6>
+                                                <h6 class="font-extrabold mb-0">
+                                                    <?php echo $total_branches; ?>
+                                                </h6>
                                             </div>
                                         </div>
                                     </div>
@@ -91,13 +112,13 @@ if (!isset($_SESSION['user_id'])) {
                                     <div class="card-body px-3 py-4-5">
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <div class="stats-icon green">
-                                                    <i class="iconly-boldAdd-User"></i>
+                                                <div class="stats-icon red">
+                                                    <i class="iconly-boldDanger"></i>
                                                 </div>
                                             </div>
                                             <div class="col-md-8">
-                                                <h6 class="text-muted font-semibold">Following</h6>
-                                                <h6 class="font-extrabold mb-0">80.000</h6>
+                                                <h6 class="text-muted font-semibold">Ill Staffs</h6>
+                                                <h6 class="font-extrabold mb-0">15</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -133,7 +154,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </div>
                             </div>
                         </div>
-                     
+
                     </div>
                     <div class="col-12 col-lg-4">
                         <div class="card">
@@ -155,12 +176,12 @@ if (!isset($_SESSION['user_id'])) {
                                         </h6>
 
                                         <small class="text-primary d-block">
-                                            Role:
+                                            <b> Role:</b>
                                             <?php echo htmlspecialchars($_SESSION['role'] ?? 'Not Assigned'); ?>
                                         </small>
 
                                         <small class="text-success d-block">
-                                            Location:
+                                            <b> Location:</b>
                                             <?php echo htmlspecialchars($_SESSION['location'] ?? 'Unknown'); ?>
                                         </small>
 
@@ -169,7 +190,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="card">
                             <div class="card-header">
                                 <h4>Visitors Profile</h4>

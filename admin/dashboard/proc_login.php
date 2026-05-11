@@ -20,7 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     if (empty($username) || empty($password)) {
-        echo 'All fields are required';
+        $msg = "All fields are required";
+        $msg_type = "danger";
+        include 'auth-login.php';
+        exit();
     }
 
     // Prepare statement (secure against SQL injection)
@@ -69,10 +72,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: index.php");
             exit();
         } else {
-            echo "Invalid login credentials";
+            $msg = "Invalid login credentials";
+            $msg_type = "danger";
+            include 'auth-login.php';
+            exit();
         }
     } else {
-        echo "Invalid login credentials";
+        $msg = "Invalid login credentials";
+        $msg_type = "danger";
+        include 'auth-login.php';
+        exit();
     }
 
     $stmt->close();

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="assets/css/pages/auth.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
@@ -19,10 +20,27 @@
             <div class="col-lg-6 col-12">
                 <div id="auth-left">
                     <div class="auth-logo">
-                        <a href=""><img src="assets/images/logo/logo.webp" alt="Logo"></a>
+                        <a href=""><img src="assets/images/logo/logo.png" alt="Logo"></a>
                     </div>
                     <h1 class="auth-title">Log in.</h1>
                     <p class="auth-subtitle mb-5">Log in with your data that you entered during registration.</p>
+
+                    <?php
+                    // Ensure variables are always defined
+                    $msg = $msg ?? '';
+                    $msg_type = $msg_type ?? 'success'; // default is success
+
+                    // Only show alert if message exists
+                    if (!empty($msg)) {
+                    ?>
+                        <div class="alert m-3 alert-<?php echo $msg_type; ?> alert-dismissible show fade">
+                            <?php echo $msg; ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                        </div>
+                    <?php
+                    }
+                    ?>
 
                     <form action="proc_login.php" method="post">
                         <div class="form-group position-relative has-icon-left mb-4">
@@ -67,5 +85,6 @@
 
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

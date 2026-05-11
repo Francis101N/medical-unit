@@ -24,7 +24,6 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/bootstrap.css">
-
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
@@ -83,7 +82,24 @@ if (!isset($_SESSION['user_id'])) {
                                 <!-- CARD HEADER -->
                                 <div class="card-header bg-success text-white py-3">
                                     <h4 class="mb-0">Add New Branch</h4>
-                                </div>
+                                </div> <br>
+
+                                <?php
+                                // Ensure variables are always defined
+                                $msg = $msg ?? '';
+                                $msg_type = $msg_type ?? 'success'; // default is success
+
+                                // Only show alert if message exists
+                                if (!empty($msg)) {
+                                ?>
+                                    <div class="alert m-3 alert-<?php echo $msg_type; ?> alert-dismissible show fade">
+                                        <?php echo $msg; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                <?php
+                                }
+                                ?>
 
                                 <!-- CARD BODY -->
                                 <div class="card-content">

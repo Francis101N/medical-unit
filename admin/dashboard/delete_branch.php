@@ -71,7 +71,7 @@ if ($stmt->execute()) {
     }
 
     echo "<script>
-        alert('Branch deleted successfully');
+        alert('Branch deleted successfully ..');
         window.location.href = 'branches.php';
     </script>";
 } else {

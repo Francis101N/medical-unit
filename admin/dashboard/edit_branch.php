@@ -127,8 +127,25 @@ $row = $result->fetch_assoc();
 
                                 <!-- CARD HEADER -->
                                 <div class="card-header bg-success text-white py-3">
-                                    <h4 class="mb-0">Add New Branch</h4>
-                                </div>
+                                    <h4 class="mb-0">Edit Branch</h4>
+                                </div> <br>
+
+                                <?php
+                                // Ensure variables are always defined
+                                $msg = $msg ?? '';
+                                $msg_type = $msg_type ?? 'success'; // default is success
+
+                                // Only show alert if message exists
+                                if (!empty($msg)) {
+                                ?>
+                                    <div class="alert m-3 alert-<?php echo $msg_type; ?> alert-dismissible show fade">
+                                        <?php echo $msg; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                <?php
+                                }
+                                ?>
 
                                 <!-- CARD BODY -->
                                 <div class="card-content">
