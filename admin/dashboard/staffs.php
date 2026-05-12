@@ -287,7 +287,7 @@ if (!isset($_SESSION['user_id'])) {
 
                                                     <?php if (!empty($passport)) { ?>
 
-                                                        <img src="uploads/<?php echo $passport; ?>">
+                                                        <img src="uploads/<?php echo $passport; ?>" style="" >
 
                                                     <?php } else { ?>
 

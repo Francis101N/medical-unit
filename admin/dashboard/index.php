@@ -71,7 +71,7 @@ if (!isset($_SESSION['user_id'])) {
                                                 </div>
                                             </div>
                                             <div class="col-md-8">
-                                                <h6 class="text-muted font-semibold">Total Staffs</h6>
+                                                <h6 class="text-muted font-semibold">Registered Staffs</h6>
                                                 <h6 class="font-extrabold mb-0">
                                                     <?php echo $total_staffs; ?>
                                                 </h6>
