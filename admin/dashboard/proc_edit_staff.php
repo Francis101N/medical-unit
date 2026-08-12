@@ -3,34 +3,60 @@ session_start();
 /** @var mysqli $conn */
 include('db.php');
 
-if (isset($_POST['submit'])) {
+// Helper function to decode the encrypted ID token
+function decryptId($token)
+{
+    $key = "medical-secret-key";
+    $decoded = base64_decode(strtr($token, '-_', '+/'));
+    if ($decoded === false || !str_contains($decoded, '|')) {
+        return false;
+    }
+    list($id, $secret) = explode('|', $decoded, 2);
+    return ($secret === $key) ? $id : false;
+}
+
+if (isset($_POST['update_staff'])) {
     // =========================
-    // GET ID
+    // GET & DECRYPT ID TOKEN
     // =========================
-    $id = $_POST['id'];
+    $encrypted_id = $_POST['id'];
+    $id = decryptId($encrypted_id);
+
+    // Bounce if token manipulation is detected
+    if ($id === false) {
+        $_SESSION['error'] = "Invalid or expired tracking token identification details.";
+        header("Location: staffs.php");
+        exit();
+    }
 
     // =========================
     // COLLECT DATA
     // =========================
-    $staff_id                = mysqli_real_escape_string($conn, $_POST['staff_id']);
-    $fullname                = mysqli_real_escape_string($conn, $_POST['fullname']);
-    $email                   = mysqli_real_escape_string($conn, $_POST['email']);
-    $phone                   = mysqli_real_escape_string($conn, $_POST['phone']);
-    $gender                  = mysqli_real_escape_string($conn, $_POST['gender']);
-    $dob                     = mysqli_real_escape_string($conn, $_POST['dob']);
-    $branch_id               = mysqli_real_escape_string($conn, $_POST['branch_id']);
-    $department              = mysqli_real_escape_string($conn, $_POST['department']);
-    $role                    = mysqli_real_escape_string($conn, $_POST['role']);
-    $employment_type         = mysqli_real_escape_string($conn, $_POST['employment_type']);
-    $hire_date               = mysqli_real_escape_string($conn, $_POST['hire_date']);
-    $status                  = mysqli_real_escape_string($conn, $_POST['status']);
+    $staff_id        = $_POST['staff_id'];
+    $fullname        = trim($_POST['fullname']); // Trim spaces to prevent join mismatches
+    $email           = $_POST['email'];
+    $phone           = $_POST['phone'];
+    $gender          = $_POST['gender'];
+    $dob             = $_POST['dob'];
+    $branch_id       = $_POST['branch_id'];
+    $department      = $_POST['department'];
+    $role            = $_POST['role'];
+    $employment_type = $_POST['employment_type'];
+    $hire_date       = $_POST['hire_date'];
+    $status          = $_POST['status'];
 
     // =========================
-    // GET EXISTING STAFF
+    // GET EXISTING STAFF DETAILS
     // =========================
-    $get_old = mysqli_query($conn, "SELECT passport FROM staffs WHERE id='$id'");
-    $old_data = mysqli_fetch_assoc($get_old);
-    $old_passport = $old_data['passport'];
+    // We must pull both passport AND the old fullname to check for shifts
+    $stmt_old = mysqli_prepare($conn, "SELECT fullname, passport FROM staffs WHERE id = ?");
+    mysqli_stmt_bind_param($stmt_old, "s", $id);
+    mysqli_stmt_execute($stmt_old);
+    $result_old = mysqli_stmt_get_result($stmt_old);
+    $old_data = mysqli_fetch_assoc($result_old);
+
+    $old_fullname = $old_data['fullname'] ?? '';
+    $old_passport = $old_data['passport'] ?? '';
 
     // =========================
     // PASSPORT UPLOAD
@@ -44,53 +70,101 @@ if (isset($_POST['submit'])) {
         $ext = pathinfo($file_name, PATHINFO_EXTENSION);
         $new_name = time() . '_' . rand(1000, 9999) . '.' . $ext;
 
-        move_uploaded_file($file_tmp, "uploads/" . $new_name);
-
-        $passport = $new_name;
+        if (move_uploaded_file($file_tmp, "uploads/" . $new_name)) {
+            $passport = $new_name;
+        }
     }
 
     // =========================
     // CHECK EMAIL DUPLICATE
     // =========================
-    $check_email = mysqli_query($conn, "SELECT * FROM staffs WHERE email='$email' AND id != '$id'");
+    $stmt_email = mysqli_prepare($conn, "SELECT id FROM staffs WHERE email = ? AND id != ?");
+    mysqli_stmt_bind_param($stmt_email, "ss", $email, $id);
+    mysqli_stmt_execute($stmt_email);
+    $result_email = mysqli_stmt_get_result($stmt_email);
 
-    if (mysqli_num_rows($check_email) > 0) {
+    if (mysqli_num_rows($result_email) > 0) {
         $_SESSION['error'] = "Email already exists";
-        header("Location: edit_staff.php?id=$id");
+        header("Location: edit_staff.php?id=" . urlencode($encrypted_id));
         exit();
     }
 
     // =========================
-    // UPDATE QUERY
+    // TRANSACTION CONTROL
     // =========================
-    $update = mysqli_query($conn, "
-        UPDATE staffs SET
-            staff_id='$staff_id',
-            fullname='$fullname',
-            email='$email',
-            phone='$phone',
-            gender='$gender',
-            dob='$dob',
-            passport='$passport',
-            branch_id='$branch_id',
-            department='$department',
-            role='$role',
-            employment_type='$employment_type',
-            hire_date='$hire_date',
-            status='$status'
-        WHERE id='$id'
-    ");
+    // Turn off autocommit to ensure both tables update together cleanly
+    mysqli_begin_transaction($conn);
+
+    try {
+        // 1. Update the core Staff record
+        $stmt_update = mysqli_prepare($conn, "
+            UPDATE staffs SET
+                staff_id = ?,
+                fullname = ?,
+                email = ?,
+                phone = ?,
+                gender = ?,
+                dob = ?,
+                passport = ?,
+                branch_id = ?,
+                department = ?,
+                role = ?,
+                employment_type = ?,
+                hire_date = ?,
+                status = ?
+            WHERE id = ?
+        ");
+
+        mysqli_stmt_bind_param(
+            $stmt_update,
+            "ssssssssssssss",
+            $staff_id,
+            $fullname,
+            $email,
+            $phone,
+            $gender,
+            $dob,
+            $passport,
+            $branch_id,
+            $department,
+            $role,
+            $employment_type,
+            $hire_date,
+            $status,
+            $id
+        );
+        mysqli_stmt_execute($stmt_update);
+
+        // 2. Cascade changes to medical records if the name was altered
+        if (!empty($old_fullname) && $old_fullname !== $fullname) {
+            $stmt_cascade = mysqli_prepare($conn, "
+                UPDATE staff_medical_records 
+                SET staff_name = ? 
+                WHERE staff_name = ?
+            ");
+            mysqli_stmt_bind_param($stmt_cascade, "ss", $fullname, $old_fullname);
+            mysqli_stmt_execute($stmt_cascade);
+        }
+
+        // Commit transaction blocks safely
+        mysqli_commit($conn);
+        $update_success = true;
+    } catch (Exception $e) {
+        // Roll back changes if database constraints break
+        mysqli_rollback($conn);
+        $update_success = false;
+    }
 
     // =========================
     // RESPONSE
     // =========================
-    if ($update) {
+    if ($update_success) {
         $_SESSION['success'] = "Staff updated successfully";
         header("Location: staffs.php");
         exit();
     } else {
-        $_SESSION['error'] = "Failed to update staff";
-        header("Location: edit_staff.php?id=$id");
+        $_SESSION['error'] = "Failed to update staff record details.";
+        header("Location: edit_staff.php?id=" . urlencode($encrypted_id));
         exit();
     }
 }

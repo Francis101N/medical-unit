@@ -187,12 +187,24 @@ $row = $result->fetch_assoc();
                                                 </select>
                                             </div>
 
-                                            <!-- CURRENT PASSPORT -->
+                                            <!-- CURRENT PASSPORT (Clickable for Modal Lightbox) -->
                                             <div class="mb-3">
-                                                <label>Current Passport</label><br>
-                                                <img src="uploads/<?php echo $row['medical_head_passport']; ?>"
-                                                    width="70" height="70"
-                                                    style="border-radius:50%; object-fit:cover;">
+                                                <label class="form-label d-block">Current Passport</label>
+                                                <?php if (!empty($row['medical_head_passport']) && file_exists("uploads/" . $row['medical_head_passport'])): ?>
+                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#branchPassportModal" title="Click to enlarge passport photo">
+                                                        <img src="uploads/<?php echo $row['medical_head_passport']; ?>"
+                                                            width="70" height="70"
+                                                            style="border-radius:50%; object-fit:cover; border: 2px solid #198754; cursor: pointer; transition: transform 0.2s;"
+                                                            onmouseover="this.style.transform='scale(1.05)';"
+                                                            onmouseout="this.style.transform='scale(1)';"
+                                                            alt="Medical Head Passport">
+                                                    </a>
+                                                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Click to expand photo</small>
+                                                <?php else: ?>
+                                                    <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center border" style="width: 70px; height: 70px; font-size: 0.75rem;">
+                                                        No Image
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
 
                                             <!-- NEW PASSPORT -->
@@ -206,6 +218,31 @@ $row = $result->fetch_assoc();
                                             </button>
 
                                         </form>
+
+                                        <!-- BRANCH PASSPORT LIGHTBOX MODAL -->
+                                        <?php if (!empty($row['medical_head_passport']) && file_exists("uploads/" . $row['medical_head_passport'])): ?>
+                                            <div class="modal fade" id="branchPassportModal" tabindex="-1" aria-labelledby="branchPassportModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content border-0 shadow-lg">
+                                                        <div class="modal-header bg-dark text-white">
+                                                            <h5 class="modal-title" id="branchPassportModalLabel">
+                                                                Medical Head Passport: <?php echo htmlspecialchars($row['medical_head']); ?>
+                                                            </h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-center p-4 bg-light">
+                                                            <img src="uploads/<?php echo $row['medical_head_passport']; ?>"
+                                                                alt="<?php echo htmlspecialchars($row['medical_head']); ?>"
+                                                                class="img-fluid rounded border shadow-sm"
+                                                                style="max-height: 450px; object-fit: contain;" />
+                                                        </div>
+                                                        <div class="modal-footer bg-white">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
 

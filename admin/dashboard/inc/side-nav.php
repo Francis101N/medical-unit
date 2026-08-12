@@ -35,6 +35,20 @@
                          <span>Branches</span>
                      </a>
                  </li>
+                 <li class="sidebar-item <?php echo ($currentPage == 'medical-records.php') ? 'active' : ''; ?>">
+                     <a href="medical-records.php" class="sidebar-link">
+                         <i class="bi bi-file-earmark-medical-fill"></i>
+                         <span>Staff Medical Records</span>
+                     </a>
+                 </li>
+                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
+                     <li class="sidebar-item <?php echo ($currentPage == 'branch_records.php') ? 'active' : ''; ?>">
+                         <a href="branch_records.php" class="sidebar-link">
+                             <i class="bi bi-geo-alt-fill"></i>
+                             <span>Branches Record</span>
+                         </a>
+                     </li>
+                 <?php endif; ?>
                  <li class="sidebar-item">
                      <a href="logout.php"
                          class="sidebar-link"
@@ -44,7 +58,7 @@
                          <span>Logout</span>
                      </a>
                  </li>
-                 <li class="sidebar-item  has-sub">
+                 <!-- <li class="sidebar-item  has-sub">
                      <a href="#" class='sidebar-link'>
                          <i class="bi bi-stack"></i>
                          <span>Components</span>
@@ -373,7 +387,7 @@
                          <i class="bi bi-cash"></i>
                          <span>Donate</span>
                      </a>
-                 </li>
+                 </li> -->
 
              </ul>
          </div>

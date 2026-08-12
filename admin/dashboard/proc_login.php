@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Prepare statement (secure against SQL injection)
-    $stmt = $conn->prepare("SELECT id,fullname, username, password , email, role, location FROM users WHERE username = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT id,fullname, username, password , email, role, branch FROM users WHERE username = ? LIMIT 1");
 
     if (!$stmt) {
         die("Database error");
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['fullname'] = $user['fullname'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-            $_SESSION['location'] = $user['location'];
+            $_SESSION['branch'] = $user['branch'];
 
             // Secure "remember me"
             if (!empty($_POST['remember'])) {
