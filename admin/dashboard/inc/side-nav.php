@@ -41,7 +41,13 @@
                          <span>Staff Medical Records</span>
                      </a>
                  </li>
-                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
+                 <?php
+                    // Ensure $currentPage is defined on every page before including sidebar (e.g. $currentPage = 'branch_drugs.php';)
+                    $user_role = strtolower($_SESSION['role'] ?? '');
+                    ?>
+
+                 <!-- 1. Super-Admin Only: Branch Management -->
+                 <?php if ($user_role === 'super-admin'): ?>
                      <li class="sidebar-item <?php echo ($currentPage == 'branch_records.php') ? 'active' : ''; ?>">
                          <a href="branch_records.php" class="sidebar-link">
                              <i class="bi bi-geo-alt-fill"></i>
@@ -49,6 +55,65 @@
                          </a>
                      </li>
                  <?php endif; ?>
+
+                 <hr>INVENTORY MANAGEMENT
+
+                 <!-- 2. Super-Admin Only: Master Drug Catalog Definitions -->
+                 <?php if ($user_role === 'super-admin'): ?>
+                     <li class="sidebar-item <?php echo ($currentPage == 'manage_drugs.php') ? 'active' : ''; ?>">
+                         <a href="manage_drugs.php" class="sidebar-link">
+                             <i class="bi bi-folder-plus"></i>
+                             <span> Drug Catalog</span>
+                         </a>
+                     </li>
+                 <?php endif; ?>
+
+                 <!-- 3. Super-Admin Only: Stock Dispatch / Allocation Logic -->
+                 <?php if ($user_role === 'super-admin'): ?>
+                     <li class="sidebar-item <?php echo ($currentPage == 'allocate_stock.php') ? 'active' : ''; ?>">
+                         <a href="allocate_stock.php" class="sidebar-link">
+                             <i class="bi bi-box-arrow-up-right"></i>
+                             <span>Allocate Stock</span>
+                         </a>
+                     </li>
+                 <?php endif; ?>
+
+                 <!-- 4. Visible to BOTH Super-Admin and Branch Staff -->
+                 <li class="sidebar-item <?php echo ($currentPage == 'branch_drugs.php') ? 'active' : ''; ?>">
+                     <a href="branch_drugs.php" class="sidebar-link">
+                         <i class="bi bi-archive"></i>
+                         <span><?php echo ($user_role === 'super-admin') ? 'Global Drug Vaults' : 'Branch Drug Inventory'; ?></span>
+                     </a>
+                 </li>
+
+                 <hr>REPORTS GENERATION
+                 <li class="sidebar-item <?php echo ($currentPage == 'clinical-reports.php') ? 'active' : ''; ?>">
+                     <a href="clinical-reports.php" class="sidebar-link">
+                         <i class="bi bi-file-earmark-text-fill"></i>
+                         <span>Staff Clinical Reports</span>
+                     </a>
+                 </li>
+                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
+                     <li class="sidebar-item <?php echo ($currentPage == 'drugs_reports.php') ? 'active' : ''; ?>">
+                         <a href="drugs_reports.php" class="sidebar-link">
+                             <i class="bi bi-file-earmark-text-fill"></i>
+                             <span>Drug Catalog Reports</span>
+                         </a>
+                     </li>
+                 <?php endif; ?>
+                 <li class="sidebar-item <?php echo ($currentPage == 'branch_drugs_reports.php') ? 'active' : ''; ?>">
+                     <a href="branch_drugs_reports.php" class="sidebar-link">
+                         <i class="bi bi-file-earmark-text-fill"></i>
+                         <span>Branch Drug Reports</span>
+                     </a>
+                 </li>
+                 <hr>REFRENCE LETTERS
+                 <li class="sidebar-item <?php echo ($currentPage == 'reference-letter.php') ? 'active' : ''; ?>">
+                     <a href="reference-letter.php" class="sidebar-link">
+                         <i class="bi bi-file-earmark-text-fill"></i>
+                         <span>Reference</span>
+                     </a>
+                 </li>
                  <li class="sidebar-item">
                      <a href="logout.php"
                          class="sidebar-link"
@@ -58,6 +123,7 @@
                          <span>Logout</span>
                      </a>
                  </li>
+
                  <!-- <li class="sidebar-item  has-sub">
                      <a href="#" class='sidebar-link'>
                          <i class="bi bi-stack"></i>

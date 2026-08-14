@@ -202,6 +202,71 @@ if (!isset($_SESSION['user_id'])) {
     .btn-icon-sm:hover {
         transform: translateY(-1px);
     }
+
+    /* Bio / Clinical Metric Chips */
+    .bio-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        border: 1px solid #cbd5e1;
+    }
+
+    .bio-chip.blood {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border-color: #fee2e2;
+    }
+
+    .bio-chip.geno {
+        background-color: #f0fdf4;
+        color: #16a34a;
+        border-color: #dcfce7;
+    }
+
+    /* Expanded Status Configurations */
+    .badge-soft-danger {
+        background-color: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fee2e2;
+    }
+
+    /* Filter System Controls */
+    .table-filter-bar input,
+    .table-filter-bar select {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        color: #334155;
+        font-size: 0.875rem;
+        height: 42px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .table-filter-bar input:focus,
+    .table-filter-bar select:focus {
+        border-color: #435ebe;
+        box-shadow: 0 0 0 3px rgba(67, 94, 190, 0.15);
+        outline: none;
+    }
+
+    @keyframes live-pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(25, 135, 84, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+        }
+    }
 </style>
 
 <body>
@@ -237,17 +302,88 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <section class="section">
 
-                    <div class="card">
+                    <!-- High-Performance Interactive Staff Roster Omni-Filter Component Layer -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(145deg, #ffffff, #fcfdff);">
+                        <div class="card-body p-4">
+                            <div class="row g-3 align-items-center justify-content-between table-filter-bar">
+
+                                <!-- Full-Text Search Omnibox Entry -->
+                                <div class="col-12 col-md-4 col-lg-3">
+                                    <div class="input-group dashboard-search-group shadow-3xs" style="border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                        <span class="input-group-text bg-white border-0 pe-2 ps-3 text-muted">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color: #94a3b8;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </span>
+                                        <input type="text" id="omniStaffSearch" class="form-control border-0 bg-white py-2 text-dark font-medium"
+                                            placeholder="Search ID, name, bio tags..." style="font-size: 0.9rem; box-shadow: none;">
+                                    </div>
+                                </div>
+
+                                <!-- Matrix Option Select Segment Lists Dropdowns -->
+                                <div class="col-12 col-md-8 col-lg-6">
+                                    <div class="row g-2">
+                                        <div class="col-6 col-sm">
+                                            <select id="staffDepartmentFilter" class="form-select form-select-sm shadow-3xs">
+                                                <option value="">All Departments</option>
+                                                <!-- Auto-populated by JS below -->
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm">
+                                            <select id="staffBranchFilter" class="form-select form-select-sm shadow-3xs">
+                                                <option value="">All Branches</option>
+                                                <!-- Auto-populated by JS below -->
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm">
+                                            <select id="staffCompanyFilter" class="form-select form-select-sm shadow-3xs">
+                                                <option value="">All Companies</option>
+                                                <!-- Auto-populated by JS below -->
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm">
+                                            <select id="staffStatusFilter" class="form-select form-select-sm shadow-3xs">
+                                                <option value="">Status</option>
+                                                <option value="active">Active</option>
+                                                <option value="suspended">Suspended</option>
+                                                <option value="inactive">Inactive</option>
+                                                <option value="terminated">Terminated</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm">
+                                            <select id="staffFitnessFilter" class="form-select form-select-sm shadow-3xs">
+                                                <option value="">Fitness</option>
+                                                <option value="fit">Fit</option>
+                                                <option value="under_observation">Observation</option>
+                                                <option value="unfit">Unfit</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Real-time Live Counters Interface Display Block -->
+                                <div class="col-12 col-lg-3 text-lg-end">
+                                    <div class="d-inline-flex align-items-center bg-light border px-3 py-2" style="border-radius: 12px; background-color: #f8fafc !important;">
+                                        <span class="d-inline-block bg-success rounded-circle me-2" style="width: 8px; height: 8px; animation: live-pulse 2s infinite;"></span>
+                                        <span class="text-secondary font-semibold" style="font-size: 0.85rem;">
+                                            Matched Roster: <strong id="visibleStaffCount" class="text-dark fw-bold" style="font-size: 0.95rem;">0</strong> / <span id="totalStaffCount">0</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
 
                         <!-- HEADER -->
-                        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3">
-
-                            <h4 class="card-title mb-0">Staff Records</h4>
-
-                            <a href="add_staff.php" class="btn btn-success btn-sm px-3 py-2">
+                        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom">
+                            <h4 class="card-title mb-0" style="color: #1e293b; font-weight: 600;">Staff Records Directory</h4>
+                            <a href="add_staff.php" class="btn btn-success btn-sm px-3 py-2 fw-medium" style="border-radius: 8px;">
                                 + ADD STAFF
                             </a>
-
                         </div>
 
                         <div class="table-responsive">
@@ -263,35 +399,34 @@ if (!isset($_SESSION['user_id'])) {
                                 unset($_SESSION['success']);
                             } elseif (isset($_SESSION['error'])) {
                                 $alert_msg = $_SESSION['error'];
-                                $alert_type = 'danger'; // Maps Bootstrap "danger" styling to core error states
+                                $alert_type = 'danger';
                                 unset($_SESSION['error']);
                             }
 
                             // Render dynamic contextual notifications UI
                             if (!empty($alert_msg)) {
                             ?>
-                                <div class="alert alert-<?php echo $alert_type; ?> alert-dismissible fade show m-3 shadow-sm" role="alert">
+                                <div class="alert alert-<?php echo $alert_type; ?> alert-dismissible fade show m-3 shadow-sm border-0" role="alert">
                                     <div class="d-flex align-items-center">
                                         <?php if ($alert_type === 'success') { ?>
-                                            <!-- Success Indicator Icon -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill me-2" viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill me-2 text-success" viewBox="0 0 16 16">
                                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                                             </svg>
                                         <?php } else { ?>
-                                            <!-- Error/Danger Indicator Icon -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2 text-danger" viewBox="0 0 16 16">
                                                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                                             </svg>
                                         <?php } ?>
-                                        <div>
+                                        <div class="text-dark">
                                             <?php echo htmlspecialchars($alert_msg); ?>
                                         </div>
                                     </div>
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
                             <?php } ?>
+
                             <div class="custom-table-container">
-                                <table class="modern-table table-hover align-middle mb-0" id="table1">
+                                <table class="modern-table table-hover align-middle mb-0" id="staffRecordsDirectoryWorkspaceTable" style="width: 100%; min-width: 2700px;">
                                     <thead>
                                         <tr>
                                             <th class="small-field">S/N</th>
@@ -303,7 +438,8 @@ if (!isset($_SESSION['user_id'])) {
                                             <th class="small-field">GENDER</th>
                                             <th class="medium-field">DATE OF BIRTH</th>
 
-                                            <th class="small-field">BRANCH ID</th>
+                                            <th class="small-field">BRANCH</th>
+                                            <th class="small-field">COMPANY</th>
                                             <th class="medium-field">DEPARTMENT</th>
                                             <th class="medium-field">ROLE</th>
                                             <th class="medium-field">EMPLOYMENT TYPE</th>
@@ -334,17 +470,15 @@ if (!isset($_SESSION['user_id'])) {
                                         </tr>
                                     </thead>
 
-                                   <tbody>
+                                    <tbody>
                                         <?php
                                         /** @var mysqli $conn */
                                         include('./db.php');
 
-                                        // Ensure session is started
                                         if (session_status() === PHP_SESSION_NONE) {
                                             session_start();
                                         }
 
-                                        // Secure ID encryption helper function
                                         if (!function_exists('encryptId')) {
                                             function encryptId($id)
                                             {
@@ -354,28 +488,13 @@ if (!isset($_SESSION['user_id'])) {
                                             }
                                         }
 
-                                        // Retrieve session attributes safely
                                         $user_role = strtolower($_SESSION['role'] ?? '');
                                         $user_branch = $_SESSION['branch'] ?? '';
 
-                                        // Build parameterized query based on user role
                                         if ($user_role === 'super-admin') {
-                                            // Admin sees records across all branches
-                                            $stmt = $conn->prepare("
-                                                SELECT s.*, b.branch_name 
-                                                FROM staffs s 
-                                                LEFT JOIN branches b ON s.branch_id = b.id 
-                                                ORDER BY s.id DESC
-                                            ");
+                                            $stmt = $conn->prepare(" SELECT s.*, b.branch_name FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id ORDER BY s.id DESC ");
                                         } else {
-                                            // Regular staff only see profiles belonging to their session branch
-                                            $stmt = $conn->prepare("
-                                                SELECT s.*, b.branch_name 
-                                                FROM staffs s 
-                                                LEFT JOIN branches b ON s.branch_id = b.id 
-                                                WHERE LOWER(TRIM(b.branch_name)) = LOWER(TRIM(?)) OR s.branch_id = ?
-                                                ORDER BY s.id DESC
-                                            ");
+                                            $stmt = $conn->prepare(" SELECT s.*, b.branch_name FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id WHERE LOWER(TRIM(b.branch_name)) = LOWER(TRIM(?)) OR s.branch_id = ? ORDER BY s.id DESC");
                                             $stmt->bind_param("ss", $user_branch, $user_branch);
                                         }
 
@@ -383,7 +502,7 @@ if (!isset($_SESSION['user_id'])) {
                                         $select_staff = $stmt->get_result();
 
                                         if ($select_staff && $select_staff->num_rows > 0) {
-                                            $sn = 1; // Tracks loop pull rows sequentially
+                                            $sn = 1;
 
                                             while ($row = $select_staff->fetch_assoc()) {
                                                 $id = $row['id'];
@@ -395,14 +514,13 @@ if (!isset($_SESSION['user_id'])) {
                                                 $dob = $row['dob'];
                                                 $passport = $row['passport'];
 
-                                                // Capture the branch name dynamically fetched from the join (fallback to raw ID if empty)
                                                 $branch_name = !empty($row['branch_name']) ? $row['branch_name'] : 'Branch ID: ' . $row['branch_id'];
-
+                                                $company = $row['company'];
                                                 $department = $row['department'];
                                                 $role = $row['role'];
                                                 $employment_type = $row['employment_type'];
                                                 $hire_date = $row['hire_date'];
-                                                $status = strtolower($row['status']);
+                                                $status = strtolower(trim($row['status']));
 
                                                 $address = $row['address'];
 
@@ -418,9 +536,14 @@ if (!isset($_SESSION['user_id'])) {
                                                 $emergency_contact_phone = $row['emergency_contact_phone'];
 
                                                 $last_medical_checkup = $row['last_medical_checkup'];
-                                                $fitness_status = strtolower($row['fitness_status']);
+                                                $fitness_status = strtolower(trim($row['fitness_status']));
 
-                                                // Staff Profile Status Classes
+                                                // Setup standardized fitness query flags
+                                                $fitness_query_val = $fitness_status;
+                                                if ($fitness_status === 'observation') {
+                                                    $fitness_query_val = 'under_observation';
+                                                }
+
                                                 if ($status == "active") {
                                                     $status_class = "badge-soft-success";
                                                 } elseif ($status == "suspended") {
@@ -431,7 +554,6 @@ if (!isset($_SESSION['user_id'])) {
                                                     $status_class = "badge-soft-danger";
                                                 }
 
-                                                // Medical Fitness Level Status Classes
                                                 if ($fitness_status == "fit") {
                                                     $fitness_class = "badge-soft-success";
                                                 } elseif ($fitness_status == "under_observation" || $fitness_status == "observation") {
@@ -439,8 +561,37 @@ if (!isset($_SESSION['user_id'])) {
                                                 } else {
                                                     $fitness_class = "badge-soft-danger";
                                                 }
+
+                                                // Structural Payload Matrix Compilation String Mapping across elements
+                                                $search_payload = strtolower(implode(' ', array_filter([
+                                                    $sn,
+                                                    $staff_id,
+                                                    $fullname,
+                                                    $email,
+                                                    $phone,
+                                                    $gender,
+                                                    $branch_name,
+                                                    $company,
+                                                    $department,
+                                                    $role,
+                                                    $employment_type,
+                                                    $status,
+                                                    $blood_group,
+                                                    $genotype,
+                                                    $allergies,
+                                                    $medical_conditions,
+                                                    $fitness_status
+                                                ])));
                                         ?>
-                                                <tr>
+                                                <!-- Active Structured Targeted Data Nodes -->
+                                                <tr class="searchable-staff-row"
+                                                    data-search-index="<?php echo htmlspecialchars($search_payload); ?>"
+                                                    data-dept-state="<?php echo htmlspecialchars(strtolower(trim($department))); ?>"
+                                                    data-branch-state="<?php echo htmlspecialchars(strtolower(trim($branch_name))); ?>"
+                                                    data-company-state="<?php echo htmlspecialchars(strtolower(trim($company ?? ''))); ?>"
+                                                    data-status-state="<?php echo $status; ?>"
+                                                    data-fitness-state="<?php echo $fitness_query_val; ?>">
+
                                                     <!-- Dynamic Row Counter -->
                                                     <td>
                                                         <span class="sn-badge">#<?php echo sprintf('%02d', $sn++); ?></span>
@@ -449,14 +600,14 @@ if (!isset($_SESSION['user_id'])) {
                                                     <td><span class="text-dark fw-semibold"><?php echo htmlspecialchars($staff_id); ?></span></td>
 
                                                     <!-- Passport Frame Component -->
-                                                    <td>
-                                                        <div class="passport-container">
+                                                    <td class="text-center">
+                                                        <div class="passport-container d-flex justify-content-center align-items-center">
                                                             <?php if (!empty($passport) && file_exists("uploads/" . $passport)) { ?>
-                                                                <div class="passport-frame">
-                                                                    <img src="uploads/<?php echo htmlspecialchars($passport); ?>" alt="Passport" loading="lazy">
+                                                                <div class="passport-frame shadow-sm" style="width: 45px; height: 45px; overflow: hidden; border-radius: 50%; border: 2px solid #e9ecef;">
+                                                                    <img src="uploads/<?php echo htmlspecialchars($passport); ?>" alt="Passport" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
                                                                 </div>
                                                             <?php } else { ?>
-                                                                <span class="badge-soft badge-soft-secondary text-xs">No Photo</span>
+                                                                <span class="badge bg-light text-muted border text-xs py-1 px-2">No Photo</span>
                                                             <?php } ?>
                                                         </div>
                                                     </td>
@@ -469,6 +620,9 @@ if (!isset($_SESSION['user_id'])) {
 
                                                     <!-- Display Branch Name -->
                                                     <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($branch_name); ?></span></td>
+
+                                                    <!-- Display Company Name -->
+                                                    <td><span class="fw-medium text-dark"><?php echo htmlspecialchars($company ? $company : '—'); ?></span></td>
 
                                                     <td><span class="fw-medium text-dark"><?php echo htmlspecialchars($department); ?></span></td>
                                                     <td><span class="text-muted"><?php echo htmlspecialchars($role); ?></span></td>
@@ -521,16 +675,14 @@ if (!isset($_SESSION['user_id'])) {
 
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($row['created_at']); ?></small></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($row['updated_at']); ?></small></td>
-                                                    
+
                                                     <!-- Actions Layout -->
                                                     <td class="text-end">
                                                         <div class="action-btns justify-content-end">
                                                             <?php $secure_id = encryptId($id); ?>
-
-                                                            <a href="edit_staff.php?id=<?php echo urlencode($secure_id); ?>" class="btn btn-primary btn-icon-sm">Edit</a>
-
+                                                            <a href="edit_staff.php?id=<?php echo urlencode($secure_id); ?>" class="btn btn-outline-primary btn-icon-sm">Edit</a>
                                                             <a href="delete_staff.php?id=<?php echo urlencode($secure_id); ?>"
-                                                                class="btn btn-danger btn-icon-sm"
+                                                                class="btn btn-outline-danger btn-icon-sm"
                                                                 onclick="return confirm('Are you sure you want to delete this staff record?');">
                                                                 Delete
                                                             </a>
@@ -541,8 +693,8 @@ if (!isset($_SESSION['user_id'])) {
                                             }
                                         } else {
                                             ?>
-                                            <tr>
-                                                <td colspan="28" class="text-center text-muted py-5">
+                                            <tr class="db-empty-fallback-row">
+                                                <td colspan="29" class="text-center text-muted py-5">
                                                     <div class="py-3">No profiles found registered for your assigned branch directory.</div>
                                                 </td>
                                             </tr>
@@ -550,6 +702,13 @@ if (!isset($_SESSION['user_id'])) {
                                         }
                                         $stmt->close();
                                         ?>
+
+                                        <!-- Hidden JavaScript Empty Filter State Row Structure Layer -->
+                                        <tr id="jsZeroMatchStaffRow" class="d-none">
+                                            <td colspan="29" class="text-center py-5 text-muted bg-light-subtle fw-medium">
+                                                No staff profiles matched your active query filter configurations.
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -560,6 +719,151 @@ if (!isset($_SESSION['user_id'])) {
                 </section>
             </div>
 
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const workspaceTable = document.getElementById('staffRecordsDirectoryWorkspaceTable');
+                    if (!workspaceTable) return;
+
+                    // Connect Input & Selector UI Nodes
+                    const omniInput = document.getElementById('omniStaffSearch');
+                    const deptSelect = document.getElementById('staffDepartmentFilter');
+                    const branchSelect = document.getElementById('staffBranchFilter');
+                    const companySelect = document.getElementById('staffCompanyFilter');
+                    const statusSelect = document.getElementById('staffStatusFilter');
+                    const fitnessSelect = document.getElementById('staffFitnessFilter');
+
+                    // Feedback Telemetry & Placeholder Elements 
+                    const rows = workspaceTable.querySelectorAll('.searchable-staff-row');
+                    const zeroMatchRow = document.getElementById('jsZeroMatchStaffRow');
+                    const visibleLogsIndicator = document.getElementById('visibleStaffCount');
+                    const totalLogsIndicator = document.getElementById('totalStaffCount');
+
+                    // 1. Scan Table Collection to Harvest Unique Select Option Values Dynamically
+                    const uniqueDepartments = new Set();
+                    const uniqueBranches = new Set();
+                    const uniqueCompanies = new Set();
+
+                    rows.forEach(row => {
+                        const rawDeptAttr = row.getAttribute('data-dept-state');
+                        const rawBranchAttr = row.getAttribute('data-branch-state');
+                        const rawCompanyAttr = row.getAttribute('data-company-state');
+
+                        if (rawDeptAttr) {
+                            // Read index 10 (Department Column index shifted due to Company column)
+                            const deptText = row.cells[10]?.textContent?.trim();
+                            if (deptText) uniqueDepartments.add(JSON.stringify({
+                                value: rawDeptAttr,
+                                display: deptText
+                            }));
+                        }
+                        if (rawBranchAttr) {
+                            // Read index 8 (Branch Column)
+                            const branchText = row.cells[8]?.textContent?.trim();
+                            if (branchText) uniqueBranches.add(JSON.stringify({
+                                value: rawBranchAttr,
+                                display: branchText
+                            }));
+                        }
+                        if (rawCompanyAttr && rawCompanyAttr !== '—') {
+                            // Read index 9 (Company Column)
+                            const companyText = row.cells[9]?.textContent?.trim();
+                            if (companyText && companyText !== '—') uniqueCompanies.add(JSON.stringify({
+                                value: rawCompanyAttr,
+                                display: companyText
+                            }));
+                        }
+                    });
+
+                    // Populate Dynamic Department Dropdown Options
+                    uniqueDepartments.forEach(jsonItem => {
+                        const item = JSON.parse(jsonItem);
+                        const opt = document.createElement('option');
+                        opt.value = item.value;
+                        opt.textContent = item.display;
+                        deptSelect.appendChild(opt);
+                    });
+
+                    // Populate Dynamic Branch Dropdown Options
+                    uniqueBranches.forEach(jsonItem => {
+                        const item = JSON.parse(jsonItem);
+                        const opt = document.createElement('option');
+                        opt.value = item.value;
+                        opt.textContent = item.display;
+                        branchSelect.appendChild(opt);
+                    });
+
+                    // Populate Dynamic Company Dropdown Options
+                    uniqueCompanies.forEach(jsonItem => {
+                        const item = JSON.parse(jsonItem);
+                        const opt = document.createElement('option');
+                        opt.value = item.value;
+                        opt.textContent = item.display;
+                        companySelect.appendChild(opt);
+                    });
+
+                    // Initialize baseline counters 
+                    if (totalLogsIndicator) totalLogsIndicator.textContent = rows.length;
+
+                    // 2. Multivariable Roster Processing Pipeline Logic Routine
+                    function evaluateRosterMatrixFilters() {
+                        const query = omniInput.value.toLowerCase().trim();
+                        const targetDept = deptSelect.value;
+                        const targetBranch = branchSelect.value;
+                        const targetCompany = companySelect.value;
+                        const targetStatus = statusSelect.value;
+                        const targetFitness = fitnessSelect.value;
+
+                        let visibleCount = 0;
+
+                        rows.forEach(row => {
+                            const indexPayload = row.getAttribute('data-search-index') || '';
+                            const deptState = row.getAttribute('data-dept-state') || '';
+                            const branchState = row.getAttribute('data-branch-state') || '';
+                            const companyState = row.getAttribute('data-company-state') || '';
+                            const statusState = row.getAttribute('data-status-state') || '';
+                            const fitnessState = row.getAttribute('data-fitness-state') || '';
+
+                            // Matrix conditional validations
+                            const checkSearch = query === '' || indexPayload.includes(query);
+                            const checkDept = targetDept === '' || deptState === targetDept;
+                            const checkBranch = targetBranch === '' || branchState === targetBranch;
+                            const checkCompany = targetCompany === '' || companyState === targetCompany;
+                            const checkStatus = targetStatus === '' || statusState === targetStatus;
+                            const checkFitness = targetFitness === '' || fitnessState === targetFitness ||
+                                (targetFitness === 'under_observation' && fitnessState === 'observation');
+
+                            if (checkSearch && checkDept && checkBranch && checkCompany && checkStatus && checkFitness) {
+                                row.classList.remove('d-none');
+                                visibleCount++;
+                            } else {
+                                row.classList.add('d-none');
+                            }
+                        });
+
+                        // 3. Update Real-Time Counter Telemetry Interface
+                        if (visibleLogsIndicator) visibleLogsIndicator.textContent = visibleCount;
+
+                        if (rows.length > 0) {
+                            if (visibleCount === 0) {
+                                zeroMatchRow.classList.remove('d-none');
+                            } else {
+                                zeroMatchRow.classList.add('d-none');
+                            }
+                        }
+                    }
+
+                    // Attach Event Matrix Core Observers
+                    omniInput.addEventListener('input', evaluateRosterMatrixFilters);
+                    deptSelect.addEventListener('change', evaluateRosterMatrixFilters);
+                    branchSelect.addEventListener('change', evaluateRosterMatrixFilters);
+                    companySelect.addEventListener('change', evaluateRosterMatrixFilters);
+                    statusSelect.addEventListener('change', evaluateRosterMatrixFilters);
+                    fitnessSelect.addEventListener('change', evaluateRosterMatrixFilters);
+
+                    // Bootstrap execution logic pass on template mount load
+                    evaluateRosterMatrixFilters();
+                });
+            </script>
             <?php
             include('./inc/footer.php');
             ?>

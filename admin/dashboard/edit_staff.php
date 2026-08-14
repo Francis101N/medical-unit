@@ -261,6 +261,17 @@ if (!isset($_SESSION['user_id'])) {
                                                     </select>
                                                 </div>
 
+                                                <!-- Company Selection Dropdown -->
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label fw-bold">Company</label>
+                                                    <select name="company" class="form-select form-control-lg">
+                                                        <option value="">-- Select Company --</option>
+                                                        <option value="Equal Logistics" <?php if (($staff['company'] ?? '') == 'Equal Logistics') echo 'selected'; ?>>Equal Logistics</option>
+                                                        <option value="Upstream DC" <?php if (($staff['company'] ?? '') == 'Upstream DC') echo 'selected'; ?>>Upstream DC</option>
+                                                        <option value="Viscosupport" <?php if (($staff['company'] ?? '') == 'Viscosupport') echo 'selected'; ?>>Viscosupport</option>
+                                                    </select>
+                                                </div>
+
                                                 <!-- Department Selection Dropdown -->
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label fw-bold">Department</label>

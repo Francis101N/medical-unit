@@ -16,6 +16,7 @@ if (isset($_POST['submit'])) {
     $gender                    = mysqli_real_escape_string($conn, $_POST['gender']);
     $dob                       = mysqli_real_escape_string($conn, $_POST['dob']);
     $branch_id                 = mysqli_real_escape_string($conn, $_POST['branch_id']);
+    $company                   = mysqli_real_escape_string($conn, $_POST['company']);
     $department                = mysqli_real_escape_string($conn, $_POST['department']);
     $role                      = mysqli_real_escape_string($conn, $_POST['role']);
     $employment_type           = mysqli_real_escape_string($conn, $_POST['employment_type']);
@@ -103,6 +104,7 @@ if (isset($_POST['submit'])) {
         dob,
         passport,
         branch_id,
+        company,
         department,
         role,
         employment_type,
@@ -131,6 +133,7 @@ if (isset($_POST['submit'])) {
         '$dob',
         '$passport',
         '$branch_id',
+        '$company',
         '$department',
         '$role',
         '$employment_type',

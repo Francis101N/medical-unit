@@ -176,6 +176,17 @@ if (!isset($_SESSION['user_id'])) {
                                                     </select>
                                                 </div>
 
+                                                <!-- Company -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-bold">Company</label>
+                                                    <select name="company" class="form-select form-control-lg">
+                                                        <option value="">-- Select Company --</option>
+                                                        <option value="Equal Logistics">Equal Logistics</option>
+                                                        <option value="Upstream DC">Upstream DC</option>
+                                                        <option value="Viscosupport">Viscosupport</option>
+                                                    </select>
+                                                </div>
+
                                                 <!-- Department -->
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Department</label>
@@ -331,7 +342,6 @@ if (!isset($_SESSION['user_id'])) {
                                             </div>
 
                                         </form>
-
                                     </div>
                                 </div>
 

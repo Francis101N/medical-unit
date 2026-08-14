@@ -39,6 +39,7 @@ if (isset($_POST['update_staff'])) {
     $gender          = $_POST['gender'];
     $dob             = $_POST['dob'];
     $branch_id       = $_POST['branch_id'];
+    $company         = $_POST['company'];
     $department      = $_POST['department'];
     $role            = $_POST['role'];
     $employment_type = $_POST['employment_type'];
@@ -107,6 +108,7 @@ if (isset($_POST['update_staff'])) {
                 dob = ?,
                 passport = ?,
                 branch_id = ?,
+                company = ?,
                 department = ?,
                 role = ?,
                 employment_type = ?,
@@ -117,7 +119,7 @@ if (isset($_POST['update_staff'])) {
 
         mysqli_stmt_bind_param(
             $stmt_update,
-            "ssssssssssssss",
+            "sssssssssssssss",
             $staff_id,
             $fullname,
             $email,
@@ -126,6 +128,7 @@ if (isset($_POST['update_staff'])) {
             $dob,
             $passport,
             $branch_id,
+            $company,
             $department,
             $role,
             $employment_type,

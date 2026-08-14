@@ -117,25 +117,52 @@ if (!isset($_SESSION['user_id'])) {
                                                         /** @var mysqli $conn */
                                                         include('./db.php');
 
-                                                        // UPDATED QUERY: Added LEFT JOIN to fetch the branch name using branch_id
-                                                        $query = "SELECT s.id, s.staff_id, s.fullname, b.branch_name FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id ORDER BY s.fullname ASC";
+                                                        // Ensure session attributes are initialized safely
+                                                        if (session_status() === PHP_SESSION_NONE) {
+                                                            session_start();
+                                                        }
 
-                                                        $staff_query = mysqli_query($conn, $query);
+                                                        $user_role = strtolower($_SESSION['role'] ?? '');
+                                                        $user_branch = $_SESSION['branch'] ?? '';
 
-                                                        while ($staff = mysqli_fetch_assoc($staff_query)) {
+                                                        // Enforce the identical visibility rules as your tables and chart data endpoints
+                                                        if ($user_role === 'admin' || $user_role === 'chief-admin' || $user_role === 'super-admin') {
+                                                            // Admins pull all records globally across all locations
+                                                            $query = "SELECT s.id, s.staff_id, s.fullname, s.company, b.branch_name FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id ORDER BY s.fullname ASC";
+                                                            $stmt = $conn->prepare($query);
+                                                        } else {
+                                                            // Non-admins can only see and pick staff registered under their session branch context
+                                                            $query = "SELECT s.id, s.staff_id, s.fullname, s.company, b.branch_name FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id WHERE LOWER(TRIM(b.branch_name)) = LOWER(TRIM(?)) OR s.branch_id = ? ORDER BY s.fullname ASC";
+                                                            $stmt = $conn->prepare($query);
+                                                            $stmt->bind_param("ss", $user_branch, $user_branch);
+                                                        }
+
+                                                        $stmt->execute();
+                                                        $staff_query = $stmt->get_result();
+
+                                                        while ($staff = $staff_query->fetch_assoc()) {
                                                             // Fallback message if a staff member isn't assigned to any branch yet
                                                             $branch_display = !empty($staff['branch_name']) ? $staff['branch_name'] : 'No Branch Assigned';
+                                                            $company_display = !empty($staff['company']) ? ' | Company: ' . $staff['company'] : '';
                                                         ?>
                                                             <!-- FIX: Passing staff_id instead of the primary key id to satisfy foreign key constraints -->
                                                             <!-- ADDED: data-branch attribute to store the fetched branch name securely -->
                                                             <option value="<?php echo htmlspecialchars($staff['staff_id']); ?>"
-                                                                data-branch="<?php echo htmlspecialchars($branch_display); ?>">
-                                                                <?php echo htmlspecialchars($staff['fullname']) . " (" . htmlspecialchars($staff['staff_id']) . ") - " . htmlspecialchars($branch_display); ?>
+                                                                data-branch="<?php echo htmlspecialchars($branch_display); ?>"
+                                                                data-company="<?php echo htmlspecialchars($staff['company'] ?? ''); ?>">
+                                                                <?php echo htmlspecialchars($staff['fullname']) . " (" . htmlspecialchars($staff['staff_id']) . ") - " . htmlspecialchars($branch_display) . htmlspecialchars($company_display); ?>
                                                             </option>
                                                         <?php
                                                         }
+                                                        $stmt->close();
                                                         ?>
                                                     </select>
+                                                </div>
+
+                                                <!-- Company Input Field -->
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-bold">Company</label>
+                                                    <input type="text" name="company" id="companyInput" class="form-control form-control-lg" placeholder="Company name auto-filled" readonly>
                                                 </div>
 
                                                 <!-- Intake Time -->
@@ -174,11 +201,31 @@ if (!isset($_SESSION['user_id'])) {
                                                     <textarea name="treatment_given" class="form-control form-control-lg" rows="2" placeholder="Treatments administered..."></textarea>
                                                 </div>
 
-                                                <!-- Drugs Given -->
+                                                <!-- Drugs Given (Dynamic Select from Master Catalog) -->
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-bold">Drugs Given</label>
-                                                    <textarea name="drugs_given" class="form-control form-control-lg" rows="2" placeholder="List medications prescribed/administered..."></textarea>
+                                                    <label class="form-label fw-bold">Drugs Given / Prescribed <span class="text-danger">*</span></label>
+                                                    <select name="drugs_given" class="form-select form-control-lg" required>
+                                                        <option value="">-- Select Pharmaceutical Asset --</option>
+                                                        <?php
+                                                        // Fetch all drugs from the master catalog
+                                                        $drugs_catalog_query = "SELECT id, drug_code, drug_name, strength, dosage_form FROM drugs_master ORDER BY drug_name ASC";
+                                                        $drugs_result = $conn->query($drugs_catalog_query);
+
+                                                        if ($drugs_result && $drugs_result->num_rows > 0) {
+                                                            while ($drug = $drugs_result->fetch_assoc()) {
+                                                                $strength_display = !empty($drug['strength']) ? ' ' . $drug['strength'] : '';
+                                                                $drug_full_title = $drug['drug_name'] . $strength_display . (!empty($drug['dosage_form']) ? ' (' . $drug['dosage_form'] . ')' : '');
+                                                        ?>
+                                                                <option value="<?php echo htmlspecialchars($drug_full_title); ?>">
+                                                                    <?php echo htmlspecialchars($drug_full_title) . " [Code: " . htmlspecialchars($drug['drug_code']) . "]"; ?>
+                                                                </option>
+                                                        <?php
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </select>
                                                 </div>
+
 
                                                 <!-- Dosage Instructions -->
                                                 <div class="col-md-6 mb-3">
@@ -186,11 +233,15 @@ if (!isset($_SESSION['user_id'])) {
                                                     <input type="text" name="dosage_instructions" class="form-control form-control-lg" placeholder="e.g. 2 tablets 3x daily after food">
                                                 </div>
 
-                                                <!-- Attended By -->
+                                                <!-- Attended By (Auto-filled from Session Fullname) -->
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Attended By (Doctor/Nurse)</label>
-                                                    <input type="text" name="attended_by" class="form-control form-control-lg" placeholder="Name of medical personnel">
+                                                    <?php
+                                                    $session_fullname = $_SESSION['fullname'] ?? $_SESSION['username'] ?? 'Medical Personnel';
+                                                    ?>
+                                                    <input type="text" name="attended_by" class="form-control form-control-lg" value="<?php echo htmlspecialchars($session_fullname); ?>" readonly style="background-color: #f8f9fa;">
                                                 </div>
+
 
                                                 <!-- Condition on Admission Dropdown -->
                                                 <div class="col-md-6 mb-3">
@@ -300,6 +351,12 @@ if (!isset($_SESSION['user_id'])) {
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        document.getElementById('staffSelect').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var company = selectedOption.getAttribute('data-company') || '';
+            document.getElementById('companyInput').value = company;
+        });
     </script>
     <script src="assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

@@ -308,6 +308,22 @@ include('db.php');
         padding: 3.5rem 1rem;
         color: var(--text-muted);
     }
+
+    .table-filter-bar input,
+    .table-filter-bar select {
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.8rem;
+        height: 34px;
+    }
+
+    .table-filter-bar input:focus,
+    .table-filter-bar select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        outline: none;
+    }
 </style>
 
 <body>
@@ -323,35 +339,32 @@ include('db.php');
             </header>
 
             <div class="page-heading">
-                <div class="page-title">
-                    <div class="row">
+                <div class="page-title mb-4">
+                    <div class="row align-items-center g-3">
                         <div class="col-12 col-md-6 order-md-1 order-last">
-                            <h3>Branch Records</h3>
-                            <p class="text-subtitle text-muted">
-                                View, manage, and monitor all registered branch records and information.
+                            <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">Branch Overview Dashboard</h3>
+                            <p class="text-subtitle text-muted mb-0" style="font-size: 0.9rem;">
+                                Select a operational branch below to inspect clinical profiles and manage staff medical records.
                             </p>
                         </div>
                         <div class="col-12 col-md-6 order-md-2 order-first">
                             <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
-                                <ol class="breadcrumb">
-                                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">Branch Records</li>
+                                <ol class="breadcrumb mb-0 bg-transparent p-0" style="font-size: 0.85rem;">
+                                    <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-primary fw-medium">Dashboard</a></li>
+                                    <li class="breadcrumb-item active text-muted fw-semibold" aria-current="page">Branches</li>
                                 </ol>
                             </nav>
                         </div>
                     </div>
                 </div>
                 <section class="section">
-
-                    <div class="card">
-
-                        <div class="container-fluid px-4 mt-5">
+                    <div class="card border-0 bg-transparent">
+                        <div class="container-fluid px-4 mt-4">
 
                             <?php
                             /** @var mysqli $conn */
                             include('./db.php');
 
-                            // Declare encryption helper function safely if not already declared globally
                             if (!function_exists('encryptId')) {
                                 function encryptId($id)
                                 {
@@ -360,209 +373,95 @@ include('db.php');
                                 }
                             }
 
-                            // Fetch operational branches from settings definition layout
+                            // Fetch operational branches
                             $branch_query = "SELECT id, branch_name FROM branches ORDER BY branch_name ASC";
                             $branch_result = mysqli_query($conn, $branch_query);
 
+                            $branches_data = [];
                             if ($branch_result && mysqli_num_rows($branch_result) > 0) {
-                                while ($branch_row = mysqli_fetch_assoc($branch_result)) {
-                                    $current_branch = $branch_row['branch_name'];
+                                while ($b_row = mysqli_fetch_assoc($branch_result)) {
+                                    $current_branch = $b_row['branch_name'];
+                                    $branch_pk = $b_row['id'];
 
-                                    // Prepared statement engine pulling records belonging strictly to current row branch
-                                    $log_query = "SELECT smr.*, s.passport 
-                              FROM staff_medical_records smr 
-                              LEFT JOIN staffs s ON smr.staff_name = s.fullname 
-                              WHERE smr.staff_branch = ? 
-                              ORDER BY smr.id DESC";
+                                    // Count the logs for each branch upfront for the card overview deck
+                                    $count_query = "SELECT COUNT(*) as total FROM staff_medical_records WHERE staff_branch = ?";
+                                    $c_stmt = $conn->prepare($count_query);
+                                    $c_stmt->bind_param("s", $current_branch);
+                                    $c_stmt->execute();
+                                    $count_res = $c_stmt->get_result()->fetch_assoc();
+                                    $total_records = $count_res['total'] ?? 0;
+                                    $c_stmt->close();
 
-                                    $stmt = $conn->prepare($log_query);
-                                    $stmt->bind_param("s", $current_branch);
-                                    $stmt->execute();
-                                    $records_result = $stmt->get_result();
+                                    $branches_data[] = [
+                                        'id' => $branch_pk,
+                                        'encrypted_id' => encryptId($branch_pk),
+                                        'name' => $current_branch,
+                                        'count' => $total_records
+                                    ];
+                                }
+                            }
+
+                            if (!empty($branches_data)):
                             ?>
 
-                                    <!-- Individual Corporate Branch Panel -->
-                                    <div class="branch-card">
-                                        <div class="branch-card-header">
-                                            <div class="branch-title-wrap">
-                                                <div class="branch-icon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3.5a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1c0-.552-.448-1-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm5-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />
-                                                    </svg>
+                                <!-- Modern Branch Overview Grid Cards Deck (Clickable Links) -->
+                                <div class="row g-4 mb-5" id="branchCardsDeck">
+                                    <?php foreach ($branches_data as $branch): ?>
+                                        <div class="col-12 col-md-6 col-lg-4">
+                                            <a href="branch_details.php?branch_id=<?php echo urlencode($branch['encrypted_id']); ?>" class="text-decoration-none">
+                                                <div class="branch-card clickable-branch-card m-0 h-100"
+                                                    style="cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);">
+
+                                                    <div class="branch-card-header border-0 p-4 align-items-center">
+                                                        <div class="branch-title-wrap">
+                                                            <div class="branch-icon shadow-3xs">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3.5a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1c0-.552-.448-1-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm5-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <h5 class="branch-title text-dark font-bold mb-1"><?php echo htmlspecialchars($branch['name']); ?></h5>
+                                                                <div class="branch-subtitle fw-semibold text-muted" style="font-size:0.75rem;">Click to view branch records</div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="branch-counter rounded-pill font-bold"><?php echo $branch['count']; ?> Logs</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h5 class="branch-title"><?php echo htmlspecialchars($current_branch); ?> Branch</h5>
-                                                    <div class="branch-subtitle">Medical Tracking Logs</div>
-                                                </div>
-                                            </div>
-                                            <span class="branch-counter"><?php echo $records_result->num_rows; ?> Records</span>
+                                            </a>
                                         </div>
+                                    <?php endforeach; ?>
+                                </div>
 
-                                        <div class="table-responsive">
-                                            <table class="modern-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="width: 70px;">S/N</th>
-                                                        <th>Staff Profile Name</th>
-                                                        <th class="text-center" style="width: 90px;">Avatar</th>
-                                                        <th>Department</th>
-                                                        <th>Intake Frame</th>
-                                                        <th>Release Time</th>
-                                                        <th>Primary Diagnosis</th>
-                                                        <th>Prescription & Treatment</th>
-                                                        <th style="width: 130px;">Status</th>
-                                                        <th class="text-end" style="width: 160px;">Control Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php
-                                                    if ($records_result->num_rows > 0) {
-                                                        $sn = 1;
-                                                        while ($row = $records_result->fetch_assoc()) {
-                                                            $id = $row['id'];
-                                                            $staff_name = $row['staff_name'];
-                                                            $passport = trim($row['passport'] ?? '');
-                                                            $department = $row['department'];
-                                                            $intake_time = $row['intake_time'];
-                                                            $release_time = $row['release_time'];
-                                                            $diagnosis = $row['diagnosis'];
-                                                            $treatment_given = $row['treatment_given'];
-                                                            $record_status = strtolower($row['record_status']);
-
-                                                            // Map classes cleanly based on database ENUM values
-                                                            if ($record_status === "open") {
-                                                                $status_class = "badge-status-open";
-                                                            } elseif ($record_status === "under_treatment") {
-                                                                $status_class = "badge-status-treatment";
-                                                            } else {
-                                                                $status_class = "badge-status-closed";
-                                                            }
-
-                                                            // Dynamic asset path structural depth check logic loop
-                                                            $passport_src = '';
-                                                            if (!empty($passport)) {
-                                                                $paths_to_test = [
-                                                                    "uploads/" . $passport,
-                                                                    "../uploads/" . $passport,
-                                                                    "../../uploads/" . $passport
-                                                                ];
-                                                                foreach ($paths_to_test as $test_path) {
-                                                                    if (file_exists($test_path) && !is_dir($test_path)) {
-                                                                        $passport_src = $test_path;
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                    ?>
-                                                            <tr>
-                                                                <!-- Sequential Numeric badge Indexing -->
-                                                                <td>
-                                                                    <span class="sn-badge">#<?php echo sprintf('%02d', $sn++); ?></span>
-                                                                </td>
-
-                                                                <!-- Staff Identity -->
-                                                                <td>
-                                                                    <strong style="color: var(--text-main);"><?php echo htmlspecialchars($staff_name); ?></strong>
-                                                                </td>
-
-                                                                <!-- Passport Presentation Layer -->
-                                                                <td class="text-center">
-                                                                    <?php if (!empty($passport_src)) { ?>
-                                                                        <div class="passport-avatar-wrap">
-                                                                            <img src="<?php echo htmlspecialchars($passport_src); ?>" alt="Passport Avatar" loading="lazy">
-                                                                        </div>
-                                                                    <?php } else { ?>
-                                                                        <div class="passport-avatar-placeholder">N/A</div>
-                                                                    <?php } ?>
-                                                                </td>
-
-                                                                <!-- Department Tag Badge -->
-                                                                <td>
-                                                                    <span class="dept-badge"><?php echo htmlspecialchars($department); ?></span>
-                                                                </td>
-
-                                                                <!-- Logging Frame Entry -->
-                                                                <td>
-                                                                    <small class="text-muted"><?php echo htmlspecialchars($intake_time); ?></small>
-                                                                </td>
-
-                                                                <!-- Release Time -->
-                                                                <td>
-                                                                    <small class="text-muted"><?php echo htmlspecialchars($release_time); ?></small>
-                                                                </td>
-
-                                                                <!-- Scaled Width Truncation Framework (Diagnosis) -->
-                                                                <td>
-                                                                    <div class="truncate-field" title="<?php echo htmlspecialchars($diagnosis); ?>">
-                                                                        <?php echo htmlspecialchars($diagnosis); ?>
-                                                                    </div>
-                                                                </td>
-
-                                                                <!-- Scaled Width Truncation Framework (Treatment) -->
-                                                                <td>
-                                                                    <div class="truncate-field text-secondary" title="<?php echo htmlspecialchars($treatment_given); ?>">
-                                                                        <?php echo htmlspecialchars($treatment_given); ?>
-                                                                    </div>
-                                                                </td>
-
-                                                                <!-- Soft System Status Engine Mapping -->
-                                                                <td>
-                                                                    <span class="badge-status <?php echo $status_class; ?>">
-                                                                        <?php echo ucwords(str_replace('_', ' ', htmlspecialchars($record_status))); ?>
-                                                                    </span>
-                                                                </td>
-
-                                                                <!-- Controls Interfacing Button Layout Matrix -->
-                                                                <td class="text-end">
-                                                                    <div class="d-inline-flex gap-2">
-                                                                        <a href="edit_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn-action-edit">
-                                                                            Edit
-                                                                        </a>
-                                                                        <a href="delete_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn-action-delete" onclick="return confirm('Confirm permanent deletion of this clinical log query record?');">
-                                                                            Delete
-                                                                        </a>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        <?php
-                                                        }
-                                                    } else {
-                                                        ?>
-                                                        <!-- Fallback View: Branch Data Record Layer Empty -->
-                                                        <tr>
-                                                            <td colspan="9" class="p-0">
-                                                                <div class="empty-state-wrapper">
-                                                                    <!-- <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4M12 5v14" />
-                                                                    </svg> -->
-                                                                    <div class="small fw-medium">No medical intake tracking entries discovered within this branch context profile.</div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    <?php
-                                                    }
-                                                    ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                <?php
-                                    $stmt->close();
-                                }
-                            } else {
-                                ?>
-                                <div class="card border-0 shadow-sm p-5 text-center text-muted rounded-3">
+                            <?php else: ?>
+                                <div class="card border-0 shadow-sm p-5 text-center text-muted rounded-3 bg-white">
                                     <div class="fw-bold mb-1">System Configurations Empty</div>
                                     <div class="small">No administrative organizational branches are currently active within database architecture layouts.</div>
                                 </div>
-                            <?php
-                            }
-                            ?>
+                            <?php endif; ?>
+
                         </div>
 
-                    </div>
+                        <!-- Micro-UX Performance CSS Styles Injection -->
+                        <style>
+                            .clickable-branch-card {
+                                border: 2px solid var(--border-color) !important;
+                                background-color: #ffffff;
+                            }
 
+                            .clickable-branch-card:hover {
+                                border-color: var(--primary-color) !important;
+                                background-color: #fafcff !important;
+                                transform: translateY(-2px);
+                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                            }
+
+                            .shadow-3xs {
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+                            }
+                        </style>
+                    </div>
                 </section>
+
             </div>
 
             <?php
