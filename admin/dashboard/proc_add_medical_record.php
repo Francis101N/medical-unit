@@ -24,7 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $diagnosis              = trim($_POST['diagnosis'] ?? '');
     $medical_notes          = trim($_POST['medical_notes'] ?? '');
     $treatment_given        = trim($_POST['treatment_given'] ?? '');
-    $drugs_given            = trim($_POST['drugs_given'] ?? ''); // This contains the full drug string selection
+    
+    // Handle multiple selected drugs array safely
+    $raw_drugs_array        = $_POST['drugs_given'] ?? [];
+    if (!is_array($raw_drugs_array)) {
+        $raw_drugs_array = [$raw_drugs_array];
+    }
+    // Filter out empty options if any are accidentally selected
+    $drugs_given_array      = array_filter(array_map('trim', $raw_drugs_array));
+
     $dosage_instructions    = trim($_POST['dosage_instructions'] ?? '');
     $attended_by            = trim($_POST['attended_by'] ?? '');
     $blood_pressure         = trim($_POST['blood_pressure'] ?? '');
@@ -49,6 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     // 2. Initial Validation
     if (!$submitted_staff_id || empty($intake_time)) {
         $_SESSION['msg'] = "Please fill in all required fields (Staff Selection and Intake Time).";
+        $_SESSION['msg_type'] = "danger";
+        header("Location: add_medical_record.php");
+        exit();
+    }
+
+    if (empty($drugs_given_array)) {
+        $_SESSION['msg'] = "Please select at least one prescription drug.";
         $_SESSION['msg_type'] = "danger";
         header("Location: add_medical_record.php");
         exit();
@@ -92,12 +107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         mysqli_stmt_close($lookup_stmt);
     }
 
-    // 4. Begin ACID Transaction Sequence to ensure medical log and inventory stock updates stay completely synchronized
+    // 4. Begin ACID Transaction Sequence
     $conn->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
 
     try {
-        // A. If a drug was selected, deduct 1 unit from that branch's inventory vault
-        if (!empty($drugs_given)) {
+        // Prepare string representation for database storage
+        $drugs_given_string = implode(', ', $drugs_given_array);
+
+        // A. Loop through each selected drug, verify stock, and deduct inventory
+        foreach ($drugs_given_array as $single_drug_title) {
             if ($branch_id <= 0) {
                 throw new Exception("Dispensing Error: The selected staff member is not assigned to a valid branch node vault.");
             }
@@ -112,13 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             if (!$drug_match_stmt) {
                 throw new Exception("Failed to compile pharmaceutical asset tracking mapping.");
             }
-            $drug_match_stmt->bind_param("s", $drugs_given);
+            $drug_match_stmt->bind_param("s", $single_drug_title);
             $drug_match_stmt->execute();
             $drug_res = $drug_match_stmt->get_result()->fetch_assoc();
             $drug_match_stmt->close();
 
             if (!$drug_res) {
-                throw new Exception("Dispensing Error: Selected prescription drug asset could not be verified in the master catalog.");
+                throw new Exception("Dispensing Error: Prescription drug asset (" . htmlspecialchars($single_drug_title) . ") could not be verified in the master catalog.");
             }
 
             $drug_id = intval($drug_res['id']);
@@ -139,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             $vault_check->close();
 
             if (!$vault_res || intval($vault_res['current_balance']) < 1) {
-                throw new Exception("Vault Out Of Stock: The branch vault (" . htmlspecialchars($staff_branch) . ") has insufficient stock balance available to dispense this medication.");
+                throw new Exception("Vault Out Of Stock: The branch vault (" . htmlspecialchars($staff_branch) . ") has insufficient stock balance for: " . htmlspecialchars($single_drug_title));
             }
 
             // Deduct 1 unit from the branch local vault current_balance
@@ -157,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 
             // Append a log entry into drugs_stock_logs for tracking transparency
             $processed_by_user = intval($_SESSION['user_id'] ?? 1);
-            $audit_note = "Dispensed 1 unit of " . $drugs_given . " to staff member " . $staff_actual_name . " (" . $submitted_staff_id . ").";
+            $audit_note = "Dispensed 1 unit of " . $single_drug_title . " to staff member " . $staff_actual_name . " (" . $submitted_staff_id . ").";
 
             $log_stmt = $conn->prepare("
                 INSERT INTO drugs_stock_logs (drug_id, branch_id, transaction_type, quantity, processed_by, notes, created_at) 
@@ -170,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             }
         }
 
-        // B. Insert data into staff_medical_records (including company field)
+        // B. Insert data into staff_medical_records (storing combined comma-separated string)
         $sql = "INSERT INTO staff_medical_records (
                     staff_name, 
                     staff_branch, 
@@ -210,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $diagnosis,
                 $medical_notes,
                 $treatment_given,
-                $drugs_given,
+                $drugs_given_string,
                 $dosage_instructions,
                 $attended_by,
                 $condition_on_admission,
@@ -234,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         // Commit transaction safely
         $conn->commit();
 
-        $_SESSION['msg'] = "Medical record successfully recorded and branch inventory updated!";
+        $_SESSION['msg'] = "Medical record successfully recorded and branch inventory updated for all selected drugs!";
         $_SESSION['msg_type'] = "success";
     } catch (Exception $e) {
         // Rollback transaction on failure to ensure data parity

@@ -425,7 +425,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </div>
                             <?php } ?>
 
-                            <div class="custom-table-container">
+                       <div class="custom-table-container">
                                 <table class="modern-table table-hover align-middle mb-0" id="staffRecordsDirectoryWorkspaceTable" style="width: 100%; min-width: 2700px;">
                                     <thead>
                                         <tr>
@@ -680,6 +680,7 @@ if (!isset($_SESSION['user_id'])) {
                                                     <td class="text-end">
                                                         <div class="action-btns justify-content-end">
                                                             <?php $secure_id = encryptId($id); ?>
+                                                            <a href="view_staff.php?id=<?php echo urlencode($secure_id); ?>" class="btn btn-outline-info btn-icon-sm">View</a>
                                                             <a href="edit_staff.php?id=<?php echo urlencode($secure_id); ?>" class="btn btn-outline-primary btn-icon-sm">Edit</a>
                                                             <a href="delete_staff.php?id=<?php echo urlencode($secure_id); ?>"
                                                                 class="btn btn-outline-danger btn-icon-sm"

@@ -19,7 +19,7 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Records - Medical Unit</title>
+    <title>Ill Staffs - Medical Unit</title>
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -234,16 +234,16 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="page-title">
                     <div class="row">
                         <div class="col-12 col-md-6 order-md-1 order-last">
-                            <h3>Medical Records</h3>
+                            <h3>Ill Staffs</h3>
                             <p class="text-subtitle text-muted">
-                                View, manage, and monitor all registered medical records and information.
+                                View, manage, and monitor all registered ill staff information.
                             </p>
                         </div>
                         <div class="col-12 col-md-6 order-md-2 order-first">
                             <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">Medical Records</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Ill Staffs</li>
                                 </ol>
                             </nav>
                         </div>
@@ -276,10 +276,10 @@ if (!isset($_SESSION['user_id'])) {
 
                         switch ($_GET['error']) {
                             case 'invalid_id':
-                                $msg = '<strong>System Conflict:</strong> The requested medical log record ID is invalid or corrupted.';
+                                $msg = '<strong>System Conflict:</strong> The requested ill staff record ID is invalid or corrupted.';
                                 break;
                             case 'update_failed':
-                                $msg = '<strong>Database Error:</strong> Unable to commit updates to the log table schema.';
+                                $msg = '<strong>Database Error:</strong> Unable to commit updates to the ill staff table schema.';
                                 break;
                             case 'stmt_compilation_failed':
                                 $msg = '<strong>Engine Error:</strong> SQL prepared statement generation failed mapping columns.';
@@ -439,18 +439,19 @@ if (!isset($_SESSION['user_id'])) {
                                         $user_role = strtolower($_SESSION['role'] ?? '');
                                         $user_branch = $_SESSION['branch'] ?? '';
 
-                                        // Structural validation: Router isolates log views strictly by branch ownership limits
+                                        // Structural validation: Router isolates log views strictly by role and branch ownership limits
                                         if ($user_role === 'super-admin') {
                                             $query = "SELECT smr.*, s.passport 
                                           FROM staff_medical_records smr 
                                           LEFT JOIN staffs s ON smr.staff_name = s.fullname 
+                                          WHERE LOWER(TRIM(smr.record_status)) IN ('open', 'under_treatment') 
                                           ORDER BY smr.id DESC";
                                             $stmt = $conn->prepare($query);
                                         } else {
                                             $query = "SELECT smr.*, s.passport 
                                           FROM staff_medical_records smr 
                                           LEFT JOIN staffs s ON smr.staff_name = s.fullname 
-                                          WHERE LOWER(TRIM(smr.staff_branch)) = LOWER(TRIM(?))
+                                          WHERE LOWER(TRIM(smr.record_status)) IN ('open', 'under_treatment') AND LOWER(TRIM(smr.staff_branch)) = LOWER(TRIM(?))
                                           ORDER BY smr.id DESC";
                                             $stmt = $conn->prepare($query);
                                             $stmt->bind_param("s", $user_branch);
@@ -637,18 +638,9 @@ if (!isset($_SESSION['user_id'])) {
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($created_at); ?></small></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($updated_at); ?></small></td>
 
-                                                    <!-- Action Controls Layout (With Encrypted IDs & Referral Link) -->
+                                                    <!-- Action Controls Layout (With Encrypted IDs) -->
                                                     <td class="text-end">
-                                                        <div class="action-btns justify-content-end gap-1">
-                                                            <a href="view_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-info btn-icon-sm">View</a>
-                                                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
-                                                                <a href="referral-letter.php?ref_id=<?php echo urlencode(encryptId($id)); ?>"
-                                                                    class="btn btn-outline-success btn-icon-sm"
-                                                                    title="Generate Medical Referral Note"
-                                                                    target="_blank">
-                                                                    Referral
-                                                                </a>
-                                                            <?php endif; ?>
+                                                        <div class="action-btns justify-content-end">
                                                             <a href="edit_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-primary btn-icon-sm">Edit</a>
                                                             <a href="delete_log.php?id=<?php echo urlencode(encryptId($id)); ?>"
                                                                 class="btn btn-outline-danger btn-icon-sm"
@@ -709,7 +701,7 @@ if (!isset($_SESSION['user_id'])) {
                     rows.forEach(row => {
                         const rawBranchAttr = row.getAttribute('data-branch-state');
                         if (rawBranchAttr) {
-                            // Re-harvest formal localized capitalization display string safely from cell 4 (Index 3)
+                            // Re-harvest formal localized capitalization display string safely from cell 3 (Index 3)
                             const branchText = row.cells[3]?.textContent?.trim();
                             if (branchText) {
                                 uniqueBranches.add(JSON.stringify({
@@ -720,23 +712,26 @@ if (!isset($_SESSION['user_id'])) {
                         }
                     });
 
-                    uniqueBranches.forEach(branchJson => {
-                        const branchData = JSON.parse(branchJson);
-                        const option = document.createElement('option');
-                        option.value = branchData.value;
-                        option.textContent = branchData.display;
-                        branchSelect.appendChild(option);
-                    });
+                    // Ensure dynamic options are only populated if the select element exists and hasn't been populated yet
+                    if (branchSelect && branchSelect.options.length <= 1) {
+                        uniqueBranches.forEach(branchJson => {
+                            const branchData = JSON.parse(branchJson);
+                            const option = document.createElement('option');
+                            option.value = branchData.value;
+                            option.textContent = branchData.display;
+                            branchSelect.appendChild(option);
+                        });
+                    }
 
                     // Populate Initial Static Baseline Metric Values
                     if (totalLogsIndicator) totalLogsIndicator.textContent = rows.length;
 
                     // 2. Multivariable Query Matrix Filter Processing Route Routine
                     function filterWorkspaceGrid() {
-                        const query = omniInput.value.toLowerCase().trim();
-                        const filterStatus = statusSelect.value;
-                        const filterBranch = branchSelect.value;
-                        const filterDate = dateInput.value;
+                        const query = omniInput ? omniInput.value.toLowerCase().trim() : '';
+                        const filterStatus = statusSelect ? statusSelect.value : '';
+                        const filterBranch = branchSelect ? branchSelect.value : '';
+                        const filterDate = dateInput ? dateInput.value : '';
 
                         let visibleRowsCounter = 0;
 
@@ -765,18 +760,18 @@ if (!isset($_SESSION['user_id'])) {
 
                         if (rows.length > 0) {
                             if (visibleRowsCounter === 0) {
-                                jsZeroFallback.classList.remove('d-none');
+                                if (jsZeroFallback) jsZeroFallback.classList.remove('d-none');
                             } else {
-                                jsZeroFallback.classList.add('d-none');
+                                if (jsZeroFallback) jsZeroFallback.classList.add('d-none');
                             }
                         }
                     }
 
-                    // Attach Event Core Target Listeners
-                    omniInput.addEventListener('input', filterWorkspaceGrid);
-                    statusSelect.addEventListener('change', filterWorkspaceGrid);
-                    branchSelect.addEventListener('change', filterWorkspaceGrid);
-                    dateInput.addEventListener('change', filterWorkspaceGrid);
+                    // Attach Event Core Target Listeners Safely
+                    if (omniInput) omniInput.addEventListener('input', filterWorkspaceGrid);
+                    if (statusSelect) statusSelect.addEventListener('change', filterWorkspaceGrid);
+                    if (branchSelect) branchSelect.addEventListener('change', filterWorkspaceGrid);
+                    if (dateInput) dateInput.addEventListener('change', filterWorkspaceGrid);
 
                     // Initial Processing Pipeline Launch
                     filterWorkspaceGrid();

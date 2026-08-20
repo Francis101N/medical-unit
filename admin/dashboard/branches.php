@@ -463,6 +463,10 @@ if (!isset($_SESSION['user_id'])) {
                                                                 <!-- Action Triggers -->
                                                                 <td class="text-end">
                                                                     <div class="action-btns justify-content-end">
+                                                                        <a href="view_branch.php?id=<?php echo urlencode(encryptId($row['id'])); ?>"
+                                                                            class="btn btn-outline-info btn-icon-sm">
+                                                                            View
+                                                                        </a>
                                                                         <a href="edit_branch.php?id=<?php echo urlencode(encryptId($row['id'])); ?>"
                                                                             class="btn btn-outline-primary btn-icon-sm">
                                                                             Edit

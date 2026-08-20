@@ -439,6 +439,9 @@ if (!function_exists('encryptId')) {
 
                                                         <td class="pe-4 text-end">
                                                             <div class="d-inline-flex gap-1">
+                                                                <a href="view_drug.php?code=<?php echo urlencode(encryptId($drug_code)); ?>" class="btn btn-sm btn-outline-info px-2.5 py-1" style="border-radius: 8px;" title="View Definition">
+                                                                    <i class="bi bi-eye"></i> View
+                                                                </a>
                                                                 <a href="edit_drug.php?code=<?php echo urlencode(encryptId($drug_code)); ?>" class="btn btn-sm btn-outline-primary px-2.5 py-1" style="border-radius: 8px;" title="Edit Definition">
                                                                     <i class="bi bi-pencil-square"></i> Edit
                                                                 </a>

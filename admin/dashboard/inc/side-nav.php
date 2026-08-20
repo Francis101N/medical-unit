@@ -6,7 +6,7 @@
          <div class="sidebar-header">
              <div class="d-flex justify-content-between">
                  <div class="logo">
-                     <a href="index.html"><img src="assets/images/logo/logo.png" alt="Logo" srcset="" style="width:100px; height: 80px;"></a>
+                     <a href="index.php"><img src="assets/images/logo/logo.png" alt="Logo" srcset="" style="width:100px; height: 80px;"></a>
                  </div>
                  <div class="toggler">
                      <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
@@ -23,6 +23,14 @@
                          <span>Dashboard</span>
                      </a>
                  </li>
+                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
+                     <li class="sidebar-item <?php echo ($currentPage == 'users.php') ? 'active' : ''; ?>">
+                         <a href="users.php" class="sidebar-link">
+                             <i class="bi bi-person-badge-fill"></i>
+                             <span>Users / Admins</span>
+                         </a>
+                     </li>
+                 <?php endif; ?>
                  <li class="sidebar-item <?php echo ($currentPage == 'staffs.php') ? 'active' : ''; ?>">
                      <a href="staffs.php" class="sidebar-link">
                          <i class="bi bi-people-fill"></i>
@@ -107,11 +115,11 @@
                          <span>Branch Drug Reports</span>
                      </a>
                  </li>
-                 <hr>REFRENCE LETTERS
-                 <li class="sidebar-item <?php echo ($currentPage == 'reference-letter.php') ? 'active' : ''; ?>">
-                     <a href="reference-letter.php" class="sidebar-link">
-                         <i class="bi bi-file-earmark-text-fill"></i>
-                         <span>Reference</span>
+                 <hr>REFERRAL LETTERS
+                 <li class="sidebar-item <?php echo ($currentPage == 'referrals.php') ? 'active' : ''; ?>">
+                     <a href="referrals.php" class="sidebar-link">
+                         <i class="bi bi-file-medical-fill"></i>
+                         <span>Referrals</span>
                      </a>
                  </li>
                  <li class="sidebar-item">

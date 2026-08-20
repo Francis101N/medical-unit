@@ -70,7 +70,7 @@ if (!isset($_SESSION['user_id'])) {
                         $total_branches = $total_branches_fetch['total_branches'] ?? 0;
 
                         // Role-specific counts for Staffs and Ill Staffs
-                        if ($user_role === 'admin' || $user_role === 'chief-admin' || $user_role === 'super-admin') {
+                        if ($user_role === 'super-admin') {
                             // 1. Count total staffs (Global)
                             $total_staffs_query = mysqli_query($conn, "SELECT COUNT(*) AS total_staffs FROM staffs");
                             $total_staffs_fetch = mysqli_fetch_assoc($total_staffs_query);
@@ -149,7 +149,7 @@ if (!isset($_SESSION['user_id'])) {
 
                             <!-- Ill Staffs / Medical Logs Card -->
                             <div class="col-6 col-lg-4 col-md-6">
-                                <a href="medical-records.php" class="card-link">
+                                <a href="ill_staffs.php" class="card-link">
                                     <div class="card">
                                         <div class="card-body px-3 py-4-5">
                                             <div class="row">
@@ -192,7 +192,13 @@ if (!isset($_SESSION['user_id'])) {
                             <div class="card-body py-4 px-5">
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-xl">
-                                        <img src="assets/images/faces/1.jpg" alt="Profile Image">
+                                        <?php
+                                        $session_passport = trim($_SESSION['passport'] ?? '');
+                                        $avatar_src = (!empty($session_passport) && file_exists("uploads/" . $session_passport))
+                                            ? "uploads/" . $session_passport
+                                            : "assets/images/faces/1.jpg";
+                                        ?>
+                                        <img src="<?php echo htmlspecialchars($avatar_src); ?>" alt="Profile Image" style="object-fit: cover;">
                                     </div>
                                     <div class="ms-3 name">
                                         <h5 class="font-bold mb-1">

@@ -201,11 +201,11 @@ if (!isset($_SESSION['user_id'])) {
                                                     <textarea name="treatment_given" class="form-control form-control-lg" rows="2" placeholder="Treatments administered..."></textarea>
                                                 </div>
 
-                                                <!-- Drugs Given (Dynamic Select from Master Catalog) -->
+                                                <!-- Drugs Given (Dynamic Select Multi-Select) -->
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Drugs Given / Prescribed <span class="text-danger">*</span></label>
-                                                    <select name="drugs_given" class="form-select form-control-lg" required>
-                                                        <option value="">-- Select Pharmaceutical Asset --</option>
+                                                    <select name="drugs_given[]" class="form-select form-control-lg" multiple size="4" required style="height: auto;">
+                                                        <option value="">-- Select Pharmaceutical Asset(s) --</option>
                                                         <?php
                                                         // Fetch all drugs from the master catalog
                                                         $drugs_catalog_query = "SELECT id, drug_code, drug_name, strength, dosage_form FROM drugs_master ORDER BY drug_name ASC";
@@ -224,6 +224,7 @@ if (!isset($_SESSION['user_id'])) {
                                                         }
                                                         ?>
                                                     </select>
+                                                    <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple drugs.</small>
                                                 </div>
 
 
@@ -336,28 +337,13 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <script>
-        function previewPassport(event) {
-            const input = event.target;
-            const preview = document.getElementById('passportPreview');
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = "block";
-                };
-
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
         document.getElementById('staffSelect').addEventListener('change', function() {
             var selectedOption = this.options[this.selectedIndex];
             var company = selectedOption.getAttribute('data-company') || '';
             document.getElementById('companyInput').value = company;
         });
     </script>
+    
     <script src="assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
 
