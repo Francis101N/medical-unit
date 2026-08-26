@@ -22,17 +22,33 @@ if (isset($_POST['submit'])) {
     $raw_password = trim($_POST['password'] ?? '');
     $email = trim($_POST['email'] ?? '');
 
-    // Handle role (since it's a hidden input in your form, assign a default if empty)
+    // Handle role
     $role = trim($_POST['role'] ?? '');
-    if (empty($role)) {
-        $role = 'staff'; // Default role fallback
+    $allowed_roles = ['super-admin', 'staff', 'adhoc-staff', 'adhoc-user'];
+    if (!in_array($role, $allowed_roles)) {
+        $role = 'staff'; // Fallback default role
     }
 
-    $branch = trim($_POST['branch'] ?? '');
+    // Determine deployment value (saves to the single 'branch' field for both standard and ad-hoc roles)
+    $branch = '';
+
+    if ($role === 'adhoc-staff' || $role === 'adhoc-user') {
+        $branch = trim($_POST['outreach_location'] ?? '');
+    } else {
+        $branch = trim($_POST['branch'] ?? '');
+    }
 
     // Validate required fields
-    if (empty($fullname) || empty($username) || empty($raw_password) || empty($email) || empty($branch)) {
+    if (empty($fullname) || empty($username) || empty($raw_password) || empty($email) || empty($role)) {
         $_SESSION['msg'] = "All required fields must be filled out.";
+        $_SESSION['msg_type'] = "danger";
+        header("Location: add_user.php");
+        exit();
+    }
+
+    if (empty($branch)) {
+        $deployment_type = ($role === 'adhoc-staff' || $role === 'adhoc-user') ? "outreach location" : "branch deployment";
+        $_SESSION['msg'] = "Please select a valid " . $deployment_type . ".";
         $_SESSION['msg_type'] = "danger";
         header("Location: add_user.php");
         exit();
@@ -71,7 +87,6 @@ if (isset($_POST['submit'])) {
         $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp'];
 
         if (in_array($file_ext, $allowed_extensions)) {
-            // Generate unique filename to prevent overwriting
             $passport_filename = 'user_' . time() . '_' . mt_rand(1000, 9999) . '.' . $file_ext;
             $upload_dir = 'uploads/';
 
@@ -83,7 +98,7 @@ if (isset($_POST['submit'])) {
         }
     }
 
-    // Insert user into database via prepared statement
+    // Insert user into database mapping branch/outreach to the `branch` column
     $insert_stmt = mysqli_prepare($conn, "INSERT INTO users (fullname, username, password, email, role, branch, passport) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     if ($insert_stmt) {

@@ -82,8 +82,14 @@ if (isset($_GET['ref_id'])) {
             // Populate clinical values directly from taken medical records
             $staff_data['client_complaint'] = $row['symptoms'] ?? $row['diagnosis'] ?? 'Nil';
             $staff_data['prev_medication'] = $row['treatment_given'] ?? '';
-            $staff_data['investigation_done'] = !empty($row['drugs_given']) ? 'YES' : 'NO';
-            $staff_data['investigation_what'] = $row['drugs_given'] ? 'Drugs prescribed: ' . $row['drugs_given'] : '';
+            $staff_data['investigation_done'] = (!empty($row['drugs_given']) || !empty($row['diagnosis'])) ? 'YES' : 'NO';
+
+            // Combine Diagnosis and Drugs Given into the investigation details field
+            $diagnosis_text = !empty($row['diagnosis']) ? "Diagnosis: " . $row['diagnosis'] : "";
+            $drugs_text = !empty($row['drugs_given']) ? "Drugs given: " . $row['drugs_given'] : "";
+
+            $staff_data['investigation_what'] = trim($diagnosis_text . (!empty($diagnosis_text) && !empty($drugs_text) ? " | " : "") . $drugs_text);
+
             $staff_data['reason_for_referral'] = 'Follow-up review for: ' . ($row['diagnosis'] ?? 'General medical assessment');
 
             // Vital Signs mapping
@@ -255,10 +261,17 @@ if (isset($_GET['ref_id'])) {
                 <div class="form-card">
                     <h5 class="fw-bold mb-3 text-primary">Referral Form Fields</h5>
                     <form id="referralForm">
-                        <!-- Company Logo Upload -->
+                        <!-- Company Logo Selection -->
                         <div class="mb-2">
                             <label class="form-label fw-semibold small">Company Logo</label>
-                            <input type="file" class="form-control form-control-sm" id="logoInput" accept="image/*">
+                            <select class="form-select form-select-sm" id="logoSelect">
+                                <option value="" selected disabled>-- Select Company Logo --</option>
+                                <option value="./assets/images/Equal-logo.png">Equal Logistics Limited</option>
+                                <option value="./assets/images/visco.jpeg">Viscosupport</option>
+                                <option value="./assets/images/upstream.jpeg">Upstream DC</option>
+                                <option value="./assets/images/cannax.jpeg">Cannax</option>
+                                <option value="./assets/images/idiaa.jpeg">Idiaa</option>
+                            </select>
                         </div>
 
                         <!-- Signature Upload -->
@@ -365,15 +378,19 @@ if (isset($_GET['ref_id'])) {
                             <input type="text" class="form-control form-control-sm" id="prevMedication" value="<?php echo htmlspecialchars($staff_data['prev_medication']); ?>">
                         </div>
 
-                        <!-- Investigation Done -->
+                        <!-- Investigation Done Section -->
                         <div class="mb-2">
                             <label class="form-label fw-semibold small">Any Investigation Done?</label>
                             <select class="form-select form-select-sm mb-1" id="investigationDone">
                                 <option value="YES" <?php echo ($staff_data['investigation_done'] === 'YES') ? 'selected' : ''; ?>>YES</option>
                                 <option value="NO" <?php echo ($staff_data['investigation_done'] === 'NO') ? 'selected' : ''; ?>>NO</option>
                             </select>
-                            <label class="form-label fw-semibold small">If Yes What</label>
-                            <input type="text" class="form-control form-control-sm" id="investigationWhat" value="<?php echo htmlspecialchars($staff_data['investigation_what']); ?>">
+
+                            <!-- Controllable container holding diagnosis & drugs details -->
+                            <div id="investigationWhatContainer" class="mt-2">
+                                <label class="form-label fw-semibold small">If Yes What (Diagnosis & Medications)</label>
+                                <input type="text" class="form-control form-control-sm" id="investigationWhat" value="<?php echo htmlspecialchars($staff_data['investigation_what']); ?>">
+                            </div>
                         </div>
 
                         <!-- Reason for Referral -->
@@ -416,8 +433,7 @@ if (isset($_GET['ref_id'])) {
                         <!-- Top Header Row -->
                         <div class="row align-items-center note-header-box">
                             <div class="col-7">
-                                <div class="text-danger fw-bold fs-5 tracking-wide">EQUAL LOGISTICS</div>
-                                <div class="text-secondary fw-bold" style="font-size: 0.7rem;">MEDICAL SERVICES & REFERRAL UNIT</div>
+                                <div class="text-secondary fw-bold" style="font-size: 0.9rem;">MEDICAL SERVICES & REFERRAL UNIT</div>
                             </div>
                             <div class="col-5 text-end">
                                 <div class="fw-bold text-dark" style="font-size: 0.8rem;">REF: <span id="prevRefCode"><?php echo htmlspecialchars($staff_data['ref_code']); ?></span></div>
@@ -557,27 +573,22 @@ if (isset($_GET['ref_id'])) {
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Logo Upload Handler
-            const logoInput = document.getElementById('logoInput');
+            // Company Logo Dropdown Selection Handler
+            const logoSelect = document.getElementById('logoSelect');
             const logoPlaceholder = document.getElementById('logoPlaceholder');
             const logoImageDisplay = document.getElementById('logoImageDisplay');
 
-            logoInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        logoImageDisplay.src = event.target.result;
-                        logoImageDisplay.classList.remove('d-none');
-                        logoPlaceholder.classList.add('d-none');
-                    };
-                    reader.readAsDataURL(file);
+            logoSelect.addEventListener('change', function() {
+                const selectedLogoUrl = this.value;
+                if (selectedLogoUrl) {
+                    logoImageDisplay.src = selectedLogoUrl;
+                    logoImageDisplay.classList.remove('d-none');
+                    logoPlaceholder.classList.add('d-none');
                 } else {
                     logoImageDisplay.classList.add('d-none');
                     logoPlaceholder.classList.remove('d-none');
                 }
             });
-
             // Signature Upload Handler
             const signatureInput = document.getElementById('signatureInput');
             const signaturePlaceholder = document.getElementById('signaturePlaceholder');
@@ -598,6 +609,28 @@ if (isset($_GET['ref_id'])) {
                     signaturePlaceholder.classList.remove('d-none');
                 }
             });
+
+            // Investigation Field Visibility Toggle
+            const investigationDoneSelect = document.getElementById('investigationDone');
+            const investigationWhatContainer = document.getElementById('investigationWhatContainer');
+            const investigationWhatInput = document.getElementById('investigationWhat');
+            const prevInvestigationWhat = document.getElementById('prevInvestigationWhat');
+
+            function toggleInvestigationInput() {
+                if (investigationDoneSelect.value === 'NO') {
+                    investigationWhatContainer.classList.add('d-none');
+                    investigationWhatInput.value = ''; // Clear text if No
+                    prevInvestigationWhat.textContent = '—'; // Update preview
+                } else {
+                    investigationWhatContainer.classList.remove('d-none');
+                }
+            }
+
+            // Run on page load to handle pre-selected states
+            toggleInvestigationInput();
+
+            // Run on dropdown change
+            investigationDoneSelect.addEventListener('change', toggleInvestigationInput);
 
             // Form Fields Live Binding Elements
             const fields = {

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Include database connection to fetch branches
+// Include database connection to fetch branches and outreach locations
 /** @var mysqli $conn */
 include('db.php');
 ?>
@@ -53,7 +53,7 @@ include('db.php');
                         <div class="col-12 col-md-6 order-md-1 order-last">
                             <h3 class="mb-1">Add New User</h3>
                             <p class="text-subtitle text-muted mb-0">
-                                Create a new user account and assign credentials, role, and branch deployment.
+                                Create a new user account and assign credentials, role, and deployment.
                             </p>
                         </div>
 
@@ -91,7 +91,7 @@ include('db.php');
                                 <?php
                                 // Ensure variables are always defined
                                 $msg = $msg ?? '';
-                                $msg_type = $msg_type ?? 'success'; // default is success
+                                $msg_type = $msg_type ?? 'success';
 
                                 // Only show alert if message exists
                                 if (!empty($msg)) {
@@ -143,20 +143,23 @@ include('db.php');
                                                     placeholder="Enter email address" required>
                                             </div>
 
-                                            <!-- Role -->
-
-                                            <input type="text" name="role"
-                                                class="form-control form-control-lg shadow-sm"
-                                                placeholder="Enter system role (e.g. Doctor, Admin)" hidden>
-
-
-                                            <!-- Branch Deployment (Dynamic Dropdown) -->
+                                            <!-- Role Dropdown -->
                                             <div class="form-group mb-4">
+                                                <label class="form-label fw-bold">User Role</label>
+                                                <select name="role" id="userRole" class="form-select form-control-lg shadow-sm" required>
+                                                    <option value="" selected disabled>-- Select Role --</option>
+                                                    <option value="super-admin">Super Admin</option>
+                                                    <option value="staff">Staff</option>
+                                                    <option value="adhoc-user">Adhoc User</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Branch Deployment (Dynamic Dropdown - Hidden when adhoc is selected) -->
+                                            <div class="form-group mb-4" id="branchContainer">
                                                 <label class="form-label fw-bold">Branch Deployment</label>
-                                                <select name="branch" class="form-select form-control-lg shadow-sm" required>
+                                                <select name="branch" id="branchSelect" class="form-select form-control-lg shadow-sm" required>
                                                     <option value="">-- Select Branch --</option>
                                                     <?php
-                                                    // Fetch branches from the database (adjust column name 'branch_name' if your table uses a different column like 'name')
                                                     $branch_query = mysqli_query($conn, "SELECT DISTINCT branch_name FROM branches ORDER BY branch_name ASC");
                                                     if ($branch_query && mysqli_num_rows($branch_query) > 0) {
                                                         while ($b_row = mysqli_fetch_assoc($branch_query)) {
@@ -165,6 +168,29 @@ include('db.php');
                                                         }
                                                     } else {
                                                         echo '<option value="" disabled>No branches available</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <!-- Outreach Location (Dynamic Dropdown - Shown only when adhoc-staff/user role is selected) -->
+                                            <div class="form-group mb-4 d-none" id="outreachContainer">
+                                                <label class="form-label fw-bold">Outreach Location</label>
+                                                <select name="outreach_location" id="outreachSelect" class="form-select form-control-lg shadow-sm">
+                                                    <option value="">-- Select Outreach Location --</option>
+                                                    <?php
+                                                    // Pull locations dynamically from the 'outreach' table using the location field
+                                                    $outreach_query = @mysqli_query($conn, "SELECT location FROM `outreach` ORDER BY id DESC");
+                                                    if ($outreach_query && mysqli_num_rows($outreach_query) > 0) {
+                                                        while ($o_row = mysqli_fetch_assoc($outreach_query)) {
+                                                            $location = htmlspecialchars($o_row['location'] ?? '');
+
+                                                            if (!empty($location)) {
+                                                                echo '<option value="' . $location . '">' . $location . '</option>';
+                                                            }
+                                                        }
+                                                    } else {
+                                                        echo '<option value="" disabled>No outreach locations available</option>';
                                                     }
                                                     ?>
                                                 </select>
@@ -216,6 +242,42 @@ include('db.php');
     </div>
 
     <script>
+        // Toggle Branch vs Outreach Location based on Role selection
+        const userRoleSelect = document.getElementById('userRole');
+        const branchContainer = document.getElementById('branchContainer');
+        const branchSelect = document.getElementById('branchSelect');
+        const outreachContainer = document.getElementById('outreachContainer');
+        const outreachSelect = document.getElementById('outreachSelect');
+
+        function handleRoleChange() {
+            const selectedRole = userRoleSelect.value;
+
+            if (selectedRole === 'adhoc-staff' || selectedRole === 'adhoc-user') {
+                // Hide and clear Branch deployment
+                branchContainer.classList.add('d-none');
+                branchSelect.value = '';
+                branchSelect.removeAttribute('required');
+
+                // Show Outreach Location and make it required
+                outreachContainer.classList.remove('d-none');
+                outreachSelect.setAttribute('required', 'required');
+            } else {
+                // Hide and clear Outreach location
+                outreachContainer.classList.add('d-none');
+                outreachSelect.value = '';
+                outreachSelect.removeAttribute('required');
+
+                // Show Branch deployment and make it required
+                branchContainer.classList.remove('d-none');
+                branchSelect.setAttribute('required', 'required');
+            }
+        }
+
+        userRoleSelect.addEventListener('change', handleRoleChange);
+
+        // Run on page load in case of browser reloads / old state
+        handleRoleChange();
+
         function previewPassport(event) {
             const input = event.target;
             const preview = document.getElementById('passportPreview');
