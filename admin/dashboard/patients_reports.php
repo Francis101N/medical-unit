@@ -6,49 +6,52 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Ensure user is logged in AND has the super-admin role
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super-admin') {
-    echo "<script>alert('Access denied: Only super-admins can access this page.'); window.location.href='index.php';</script>";
-    exit();
-}
-
 /** @var mysqli $conn */
 include('db.php');
 
-// Handle Report Export Request (Excel Spreadsheet .xls download via HTML Table XML markup)
+$user_role = $_SESSION['role'] ?? '';
+$user_branch = $_SESSION['branch'] ?? ''; // Using the exact session branch key
+
+// Handle Report Export Request (Excel Spreadsheet .xls / .xlsx download via HTML Table XML markup)
 $export_mode = $_GET['export'] ?? '';
 $report_period = $_GET['period'] ?? 'monthly'; // weekly, monthly, yearly, custom
-$target_category = $_GET['category'] ?? 'all';
 $custom_start = $_GET['start_date'] ?? '';
 $custom_end = $_GET['end_date'] ?? '';
 
-// Date interval calculation based on selected period for registered drugs
+// Role-based branch scoping control: super-admin can select or view all, others locked to their branch
+if ($user_role === 'super-admin') {
+    $target_branch = $_GET['branch'] ?? 'all';
+} else {
+    $target_branch = $user_branch;
+}
+
+// Date interval calculation based on selected period
 $date_condition = "1=1";
 $params = [];
 $types = "";
 
 if ($report_period === 'weekly') {
-    $date_condition = "created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+    $date_condition = "pmr.intake_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
 } elseif ($report_period === 'monthly') {
-    $date_condition = "created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+    $date_condition = "pmr.intake_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
 } elseif ($report_period === 'yearly') {
-    $date_condition = "created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
+    $date_condition = "pmr.intake_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 } elseif ($report_period === 'custom' && !empty($custom_start) && !empty($custom_end)) {
-    $date_condition = "DATE(created_at) BETWEEN ? AND ?";
+    $date_condition = "DATE(pmr.intake_time) BETWEEN ? AND ?";
     $params[] = $custom_start;
     $params[] = $custom_end;
     $types .= "ss";
 }
 
-// Drug Category filtering condition
-if ($target_category !== 'all' && !empty($target_category)) {
-    $date_condition .= " AND category = ?";
-    $params[] = $target_category;
+// Branch / Location filtering condition for outreach patient medical records
+if ($target_branch !== 'all' && !empty($target_branch)) {
+    $date_condition .= " AND pmr.patient_location = ?";
+    $params[] = $target_branch;
     $types .= "s";
 }
 
-// Fetch complete registered drugs records from drugs_master table matching exact schema
-$report_query = "SELECT * FROM drugs_master WHERE $date_condition ORDER BY created_at DESC";
+// Fetch complete generated outreach patient medical report metrics & comprehensive records
+$report_query = "SELECT pmr.* FROM patient_medical_records pmr WHERE $date_condition ORDER BY pmr.intake_time DESC";
 $stmt = $conn->prepare($report_query);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -58,7 +61,7 @@ $report_result = $stmt->get_result();
 
 // Handle Native Excel Spreadsheet Download Export Trigger (.xls format containing complete detailed markup)
 if ($export_mode === 'excel') {
-    $filename = 'master_drug_catalog_' . $report_period . '_' . date('Y-m-d') . '.xls';
+    $filename = 'outreach_patients_medical_report_' . $report_period . '_' . date('Y-m-d') . '.xls';
     header("Content-Type: application/vnd.ms-excel; charset=utf-8");
     header("Content-Disposition: attachment; filename=\"$filename\"");
     header("Pragma: no-cache");
@@ -67,32 +70,39 @@ if ($export_mode === 'excel') {
     echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
     echo '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #999; padding: 8px; text-align: left; font-size: 11pt; font-family: Calibri, sans-serif; } th { background-color: #0d6efd; color: #ffffff; font-weight: bold; }</style></head>';
     echo '<body>';
-    echo '<h2>Master Drug Catalog Records Report</h2>';
-    echo '<p><strong>Report Period:</strong> ' . ucwords($report_period) . ' | <strong>Category Filter:</strong> ' . htmlspecialchars($target_category) . ' | <strong>Generated Date:</strong> ' . date('Y-m-d H:i:s') . '</p>';
+    echo '<h2>Outreach Patient Medical Records Report</h2>';
+    echo '<p><strong>Report Period:</strong> ' . ucwords($report_period) . ' | <strong>Branch Scope:</strong> ' . htmlspecialchars($target_branch) . ' | <strong>Generated Date:</strong> ' . date('Y-m-d H:i:s') . '</p>';
     echo '<table>';
     echo '<thead><tr>';
-    echo '<th>ID</th>';
-    echo '<th>Drug Code</th>';
-    echo '<th>Drug Name</th>';
-    echo '<th>Generic Name</th>';
-    echo '<th>Category</th>';
-    echo '<th>Strength</th>';
-    echo '<th>Quantity</th>';
-    echo '<th>Dosage Form</th>';
-    echo '<th>Created At</th>';
+    echo '<th>S/N</th>';
+    echo '<th>Patient Name</th>';
+    echo '<th>Patient Location</th>';
+    echo '<th>Gender</th>';
+    echo '<th>Phone Number</th>';
+    echo '<th>Blood Group / Genotype</th>';
+    echo '<th>Intake Timestamp</th>';
+    echo '<th>Release Timestamp</th>';
+    echo '<th>Primary Diagnosis</th>';
+    echo '<th>Drugs Given</th>';
+    echo '<th>Attended By</th>';
+    echo '<th>Record Status</th>';
     echo '</tr></thead><tbody>';
 
+    $excel_row_index = 1;
     while ($row = $report_result->fetch_assoc()) {
         echo '<tr>';
-        echo '<td>' . htmlspecialchars($row['id']) . '</td>';
-        echo '<td>' . htmlspecialchars($row['drug_code'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['drug_name'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['generic_name'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['category'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['strength'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['quantity'] ?? '0') . '</td>';
-        echo '<td>' . htmlspecialchars($row['dosage_form'] ?? 'N/A') . '</td>';
-        echo '<td>' . htmlspecialchars($row['created_at'] ?? 'N/A') . '</td>';
+        echo '<td>' . $excel_row_index++ . '</td>';
+        echo '<td>' . htmlspecialchars($row['patient_name']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['patient_location']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['gender'] ?? 'N/A') . '</td>';
+        echo '<td>' . htmlspecialchars($row['phone_number'] ?? 'N/A') . '</td>';
+        echo '<td>' . htmlspecialchars(($row['blood_group'] ?? 'N/A') . ' / ' . ($row['genotype'] ?? 'N/A')) . '</td>';
+        echo '<td>' . htmlspecialchars($row['intake_time']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['release_time'] ? $row['release_time'] : 'Not Released') . '</td>';
+        echo '<td>' . htmlspecialchars($row['diagnosis']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['drugs_given'] ?? 'None') . '</td>';
+        echo '<td>' . htmlspecialchars($row['attended_by'] ?? 'N/A') . '</td>';
+        echo '<td>' . ucwords(str_replace('_', ' ', htmlspecialchars($row['record_status']))) . '</td>';
         echo '</tr>';
     }
     echo '</tbody></table>';
@@ -100,9 +110,9 @@ if ($export_mode === 'excel') {
     exit();
 }
 
-// Fetch distinct categories for the filter dropdown
-$categories_dropdown_query = "SELECT DISTINCT category FROM drugs_master WHERE category IS NOT NULL AND category != '' ORDER BY category ASC";
-$categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
+// Fetch active outreach locations list for the report generator filter dropdown (Super-admin only)
+$branches_dropdown_query = "SELECT DISTINCT location FROM outreach WHERE location IS NOT NULL AND location != '' ORDER BY location ASC";
+$branches_dropdown_res = mysqli_query($conn, $branches_dropdown_query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -110,7 +120,7 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Drug Catalog - Medical Unit</title>
+    <title>Outreach Patient Clinical Reports - Medical Unit</title>
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -166,6 +176,33 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
         border-bottom: 1px solid var(--border-color);
         vertical-align: middle;
         white-space: nowrap;
+    }
+
+    .badge-status {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+    }
+
+    .badge-status-open {
+        background-color: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .badge-status-treatment {
+        background-color: #fffbe3;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .badge-status-closed {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
     }
 
     @media print {
@@ -236,16 +273,16 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
                 <div class="page-title mb-4">
                     <div class="row align-items-center g-3">
                         <div class="col-12 col-md-6">
-                            <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">Master Drug Catalog Records</h3>
+                            <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">Outreach Patient Clinical Reports</h3>
                             <p class="text-subtitle text-muted mb-0" style="font-size: 0.9rem;">
-                                Manage and export complete registered medication master catalog details directly to Excel spreadsheets or PDF.
+                                <?php echo $user_role === 'super-admin' ? 'Super-Admin View: Generating outreach patient records across all branches/locations.' : 'Branch View: Generating outreach patient records restricted to ' . htmlspecialchars($user_branch) . '.'; ?>
                             </p>
                         </div>
                         <div class="col-12 col-md-6 text-md-end no-print">
                             <button onclick="window.print()" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-2 me-2">
                                 <i class="bi bi-printer me-1"></i> Print PDF
                             </button>
-                            <a href="?export=excel&period=<?php echo $report_period; ?>&category=<?php echo urlencode($target_category); ?>&start_date=<?php echo $custom_start; ?>&end_date=<?php echo $custom_end; ?>" class="btn btn-success btn-sm fw-bold px-3 py-2 text-white">
+                            <a href="?export=excel&period=<?php echo $report_period; ?>&branch=<?php echo urlencode($target_branch); ?>&start_date=<?php echo $custom_start; ?>&end_date=<?php echo $custom_end; ?>" class="btn btn-success btn-sm fw-bold px-3 py-2 text-white">
                                 <i class="bi bi-file-earmark-excel me-1"></i> Download Excel Spreadsheet
                             </a>
                         </div>
@@ -256,7 +293,7 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
                 <div class="report-card p-4 no-print">
                     <form method="GET" action="" class="row g-3 align-items-end">
                         <div class="col-12 col-md-3">
-                            <label class="form-label fw-bold text-secondary" style="font-size: 0.8rem;">Registration Time Frame</label>
+                            <label class="form-label fw-bold text-secondary" style="font-size: 0.8rem;">Reporting Time Frame</label>
                             <select name="period" id="reportPeriodSelect" class="form-select form-select-sm" onchange="toggleCustomDates(this.value)">
                                 <option value="weekly" <?php echo $report_period === 'weekly' ? 'selected' : ''; ?>>Past Week (Weekly)</option>
                                 <option value="monthly" <?php echo $report_period === 'monthly' ? 'selected' : ''; ?>>Past Month (Monthly)</option>
@@ -265,20 +302,25 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-3">
-                            <label class="form-label fw-bold text-secondary" style="font-size: 0.8rem;">Category Filter</label>
-                            <select name="category" class="form-select form-select-sm">
-                                <option value="all">All Drug Categories</option>
-                                <?php if ($categories_dropdown_res) {
-                                    while ($c_row = mysqli_fetch_assoc($categories_dropdown_res)) {
-                                        if (empty($c_row['category'])) continue; ?>
-                                        <option value="<?php echo htmlspecialchars($c_row['category']); ?>" <?php echo $target_category === $c_row['category'] ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($c_row['category']); ?>
+                        <?php if ($user_role === 'super-admin'): ?>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-bold text-secondary" style="font-size: 0.8rem;">Target Branch Filter</label>
+                                <select name="branch" class="form-select form-select-sm">
+                                    <option value="all">All Outreach Branches / Locations</option>
+                                    <?php while ($b_row = mysqli_fetch_assoc($branches_dropdown_res)) { ?>
+                                        <option value="<?php echo htmlspecialchars($b_row['location']); ?>" <?php echo $target_branch === $b_row['location'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($b_row['location']); ?>
                                         </option>
-                                <?php }
-                                } ?>
-                            </select>
-                        </div>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        <?php else: ?>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-bold text-secondary" style="font-size: 0.8rem;">Locked Branch Scope</label>
+                                <input type="text" class="form-control form-control-sm bg-light" value="<?php echo htmlspecialchars($user_branch); ?>" readonly>
+                                <input type="hidden" name="branch" value="<?php echo htmlspecialchars($user_branch); ?>">
+                            </div>
+                        <?php endif; ?>
 
                         <!-- Custom Date Range Fields -->
                         <div class="col-12 col-md-4 custom-date-fields" style="display: <?php echo $report_period === 'custom' ? 'block' : 'none'; ?>;">
@@ -296,7 +338,7 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
 
                         <div class="col-12 col-md-2">
                             <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold py-2">
-                                Filter Catalog
+                                Generate Report
                             </button>
                         </div>
                     </form>
@@ -307,11 +349,11 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
                     <div class="report-card m-0">
                         <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center">
                             <div>
-                                <h5 class="fw-bold text-dark mb-1">Master Drug Catalog Inventory Report</h5>
+                                <h5 class="fw-bold text-dark mb-1">Outreach Patient Medical Records Report</h5>
                                 <p class="text-muted mb-0" style="font-size: 0.82rem;">
                                     Period: <span class="fw-semibold text-capitalize"><?php echo htmlspecialchars($report_period); ?></span> |
-                                    Category: <span class="fw-semibold"><?php echo htmlspecialchars($target_category); ?></span> |
-                                    Total Registered Drugs: <span class="badge bg-primary"><?php echo $report_result->num_rows; ?></span>
+                                    Branch Scope: <span class="fw-semibold"><?php echo htmlspecialchars($target_branch); ?></span> |
+                                    Total Records Found: <span class="badge bg-primary"><?php echo $report_result->num_rows; ?></span>
                                 </p>
                             </div>
                             <div class="text-end d-none d-md-block">
@@ -323,40 +365,55 @@ $categories_dropdown_res = @mysqli_query($conn, $categories_dropdown_query);
                             <table class="modern-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Drug Code</th>
-                                        <th>Drug Name</th>
-                                        <th>Generic Name</th>
-                                        <th>Category</th>
-                                        <th>Strength</th>
-                                        <th>Quantity</th>
-                                        <th>Dosage Form</th>
-                                        <th>Created At</th>
+                                        <th>S/N</th>
+                                        <th>Patient Name</th>
+                                        <th>Patient Location</th>
+                                        <th>Gender</th>
+                                        <th>Phone</th>
+                                        <th>Blood / Genotype</th>
+                                        <th>Intake Timestamp</th>
+                                        <th>Release Timestamp</th>
+                                        <th>Primary Diagnosis</th>
+                                        <th>Drugs Given</th>
+                                        <th>Attended By</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     if ($report_result->num_rows > 0) {
+                                        $serial_number = 1;
                                         while ($row = $report_result->fetch_assoc()) {
+                                            $record_status = strtolower($row['record_status']);
+                                            if ($record_status === "open") $status_class = "badge-status-open";
+                                            elseif ($record_status === "under_treatment") $status_class = "badge-status-treatment";
+                                            else $status_class = "badge-status-closed";
                                     ?>
                                             <tr>
-                                                <td><span class="font-monospace text-muted">#<?php echo htmlspecialchars($row['id']); ?></span></td>
-                                                <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($row['drug_code'] ?? 'N/A'); ?></span></td>
-                                                <td><strong><?php echo htmlspecialchars($row['drug_name'] ?? 'N/A'); ?></strong></td>
-                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['generic_name'] ?? 'N/A'); ?></span></td>
-                                                <td><span class="badge bg-secondary"><?php echo htmlspecialchars($row['category'] ?? 'N/A'); ?></span></td>
-                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['strength'] ?? 'N/A'); ?></span></td>
-                                                <td><span class="fw-semibold text-success"><?php echo htmlspecialchars($row['quantity'] ?? '0'); ?></span></td>
-                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['dosage_form'] ?? 'N/A'); ?></span></td>
-                                                <td><small class="text-muted"><?php echo htmlspecialchars($row['created_at'] ?? 'N/A'); ?></small></td>
+                                                <td><span class="font-monospace text-muted"><?php echo $serial_number++; ?></span></td>
+                                                <td><strong><?php echo htmlspecialchars($row['patient_name']); ?></strong></td>
+                                                <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($row['patient_location']); ?></span></td>
+                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['gender'] ?? 'N/A'); ?></span></td>
+                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['phone_number'] ?? 'N/A'); ?></span></td>
+                                                <td><span class="text-secondary"><?php echo htmlspecialchars(($row['blood_group'] ?? 'N/A') . ' / ' . ($row['genotype'] ?? 'N/A')); ?></span></td>
+                                                <td><small class="text-muted"><?php echo htmlspecialchars($row['intake_time']); ?></small></td>
+                                                <td><small class="text-muted"><?php echo htmlspecialchars($row['release_time'] ? $row['release_time'] : '—'); ?></small></td>
+                                                <td><?php echo htmlspecialchars($row['diagnosis']); ?></td>
+                                                <td class="text-secondary"><?php echo htmlspecialchars($row['drugs_given'] ?? 'None'); ?></td>
+                                                <td><span class="text-secondary"><?php echo htmlspecialchars($row['attended_by'] ?? 'N/A'); ?></span></td>
+                                                <td>
+                                                    <span class="badge-status <?php echo $status_class; ?>">
+                                                        <?php echo ucwords(str_replace('_', ' ', htmlspecialchars($record_status))); ?>
+                                                    </span>
+                                                </td>
                                             </tr>
                                         <?php
                                         }
                                     } else {
                                         ?>
                                         <tr>
-                                            <td colspan="9" class="text-center py-5 text-muted">
-                                                No registered drugs found matching the selected catalog parameters.
+                                            <td colspan="12" class="text-center py-5 text-muted">
+                                                No outreach patient medical records found matching the selected reporting parameters.
                                             </td>
                                         </tr>
                                     <?php } ?>

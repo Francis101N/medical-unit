@@ -1,673 +1,547 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Home - Medical Unit</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicals | Enterprise Medical & Clinic Operations Management Suite</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #0f172a;
+            --accent-green: #10b981;
+            --bg-light: #f8fafc;
+        }
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #334155;
+            background-color: #ffffff;
+            overflow-x: hidden;
+        }
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
-    rel="stylesheet">
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
 
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+        .hero-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            padding: 100px 0 80px;
+            position: relative;
+        }
 
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
+        .hero-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 50rem;
+        }
 
-  <!-- =======================================================
-  * Template Name: Clinic
-  * Template URL: https://bootstrapmade.com/clinic-bootstrap-template/
-  * Updated: Jul 23 2025 with Bootstrap v5.3.7
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+            border-color: #cbd5e1;
+        }
+
+        .pricing-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 20px 25px -5px rgb(13 110 253 / 0.1);
+        }
+
+        .pricing-card.popular::before {
+            content: 'Most Popular Choice';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 50rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .faq-accordion .accordion-button:not(.collapsed) {
+            background-color: #f1f5f9;
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+
+        .faq-accordion .accordion-button:focus {
+            box-shadow: none;
+            border-color: #e2e8f0;
+        }
+
+        .testimonial-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        footer {
+            background: var(--secondary-color);
+            color: #94a3b8;
+        }
+    </style>
 </head>
 
-<body class="index-page">
+<body>
 
-  <?php
-  include('inc/header.php');
-  ?>
-
-  <main class="main">
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-hospital-fill"></i>
+                </div>
+                <span class="fw-bold fs-4 text-dark tracking-tight">Medical<span class="text-primary">s</span></span>
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-lg-3">
+                    <li class="nav-item"><a class="nav-link fw-medium text-dark" href="#overview">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-dark" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-dark" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-dark" href="#testimonials">Reviews</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-dark" href="#faq">FAQ</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <a href="restriction.php" class="btn btn-outline-primary px-4 fw-semibold rounded-pill">Sign In</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero Section -->
-    <section id="hero" class="hero section">
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row align-items-center">
-          <div class="col-lg-6">
-            <div class="hero-content"><br><br><br>
-              <div class="trust-badges mb-4" data-aos="fade-right" data-aos-delay="200">
-                <div class="badge-item">
-                  <i class="bi bi-shield-check"></i>
-                  <span>Secure System</span>
-                </div>
-                <div class="badge-item">
-                  <i class="bi bi-clock"></i>
-                  <span>Real-Time Access</span>
-                </div>
-                <div class="badge-item">
-                  <i class="bi bi-database-check"></i>
-                  <span>Centralized Records</span>
-                </div>
-              </div>
-
-              <h1 data-aos="fade-right" data-aos-delay="300">
-                Smart <span class="highlight">Medical Records</span> & Staff Health Management System
-              </h1>
-
-              <p class="hero-description" data-aos="fade-right" data-aos-delay="400">
-                A centralized platform for managing staff medical records, tracking health history, and monitoring wellness
-                across all company branches in real time with secure and structured data access.
-              </p>
-
-              <div class="hero-stats mb-4" data-aos="fade-right" data-aos-delay="500">
-                <div class="stat-item">
-                  <h3>
-                    <span data-purecounter-start="0" data-purecounter-end="10" data-purecounter-duration="2"
-                      class="purecounter"></span>+
-                  </h3>
-                  <p>Company Branches</p>
-                </div>
-
-                <div class="stat-item">
-                  <h3>
-                    <span data-purecounter-start="0" data-purecounter-end="5000" data-purecounter-duration="2"
-                      class="purecounter"></span>+
-                  </h3>
-                  <p>Staff Records Managed</p>
-                </div>
-
-                <div class="stat-item">
-                  <h3>
-                    <span data-purecounter-start="0" data-purecounter-end="12000" data-purecounter-duration="2"
-                      class="purecounter"></span>+
-                  </h3>
-                  <p>Medical Entries Logged</p>
-                </div>
-              </div>
-
-              <div class="hero-actions" data-aos="fade-right" data-aos-delay="600">
-                <a href="appointment.html" class="btn btn-primary">Book Appointment</a>
-                <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="btn btn-outline glightbox">
-                  <i class="bi bi-play-circle me-2"></i>
-                  Watch Our Story
-                </a>
-              </div>
-
-              <div class="emergency-contact" data-aos="fade-right" data-aos-delay="700">
-                <div class="emergency-icon">
-                  <i class="bi bi-telephone-fill"></i>
-                </div>
-                <div class="emergency-info">
-                  <small>Emergency Hotline</small>
-                  <strong>+1 (555) 911-2468</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6">
-            <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
-              <div class="main-image">
-                <img src="assets/img/health/staff-10.webp" alt="Modern Healthcare Facility" class="img-fluid">
-                <div class="floating-card appointment-card">
-                  <div class="card-icon">
-                    <i class="bi bi-calendar-check"></i>
-                  </div>
-                  <div class="card-content">
-                    <h6>Next Available</h6>
-                    <p>Today 2:30 PM</p>
-                    <small>Dr. Sarah Johnson</small>
-                  </div>
-                </div>
-                <div class="floating-card rating-card">
-                  <div class="card-content">
-                    <div class="rating-stars">
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <span class="hero-badge mb-3 d-inline-block"><i class="bi bi-shield-check-fill me-1 text-primary"></i> Multi-Branch Enterprise Medical Suite</span>
+                    <h1 class="display-4 fw-extrabold text-dark tracking-tight mb-4 lh-base">
+                        Advanced Medical Workflow & <span class="text-primary">Pharmaceutical Vault Management</span>
+                    </h1>
+                    <p class="lead text-secondary mb-5">
+                        A modern, high-performance ecosystem built for clinics, hospitals, and corporate medical outfits. Seamlessly track multi-branch inventories, real-time dispensing, outreach programs, staff directories, and comprehensive reporting.
+                    </p>
+                    <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
+                        <a href="#pricing" class="btn btn-primary btn-lg px-4 fw-bold rounded-pill shadow-sm">Explore Outright Purchase</a>
+                        <a href="restriction.php" class="btn btn-light btn-lg px-4 fw-bold rounded-pill border text-dark">Access Portal <i class="bi bi-arrow-right ms-1"></i></a>
                     </div>
-                    <h6>4.9/5</h6>
-                    <small>1,234 Reviews</small>
-                  </div>
                 </div>
-              </div>
-              <div class="background-elements">
-                <div class="element element-1"></div>
-                <div class="element element-2"></div>
-                <div class="element element-3"></div>
-              </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white p-2">
+                        <div class="bg-light p-3 rounded-3 border text-center">
+                            <div class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill mb-3 fw-semibold">
+                                <i class="bi bi-broadcast me-1"></i> Real-Time Live Tracking & Vault Synchronization Active
+                            </div>
+                            <div class="row text-start g-3">
+                                <div class="col-12">
+                                    <div class="p-3 bg-white rounded-3 border shadow-3xs">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="font-monospace text-muted small">SECURE DISPENSING LEDGER</span>
+                                            <span class="badge bg-primary-subtle text-primary border">ACID Synchronized</span>
+                                        </div>
+                                        <h6 class="fw-bold mb-1 text-dark">Multi-Drug Prescription & Inventory Vaults</h6>
+                                        <p class="text-muted small mb-0">Instant stock row-locking, multi-branch tracking, patient reporting, and outreach records unification.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-
-      </div>
-
-    </section><!-- /Hero Section -->
-
-    <!-- Home About Section -->
-    <section id="home-about" class="home-about section">
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row align-items-center">
-
-          <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right" data-aos-delay="200">
-
-            <div class="about-content">
-
-              <h2 class="section-heading">Centralized Staff Medical Records System</h2>
-
-              <p class="lead-text">
-                A secure and efficient platform designed to manage staff medical records, health history, and wellness
-                data across all company branches.
-              </p>
-
-              <p>
-                This system enables the medical unit to record, track, and analyze staff health information in real time.
-                It improves coordination across locations, supports data-driven health decisions, and ensures all medical
-                records are securely stored and easily accessible when needed.
-              </p>
-
-              <div class="stats-grid">
-
-                <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="15000"
-                    data-purecounter-duration="1"></div>
-                  <div class="stat-label">Medical Records Logged</div>
-                </div>
-
-                <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="10"
-                    data-purecounter-duration="1"></div>
-                  <div class="stat-label">Company Branches</div>
-                </div>
-
-                <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="50"
-                    data-purecounter-duration="1"></div>
-                  <div class="stat-label">Medical Staff Users</div>
-                </div>
-
-              </div>
-
-              <div class="cta-section">
-                <a href="about" class="btn-primary">Learn More About Us</a>
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
-
-            <div class="about-visual">
-
-              <div class="main-image">
-                <img src="assets/img/health/facilities-9.webp" alt="Medical Records System" class="img-fluid">
-              </div>
-
-              <div class="floating-card">
-
-                <div class="card-content">
-                  <div class="icon">
-                    <i class="bi bi-shield-lock"></i>
-                  </div>
-
-                  <div class="card-text">
-                    <h4>Secure Data Management</h4>
-                    <p>Protected access to all medical records</p>
-                  </div>
-                </div>
-
-              </div>
-
-              <br><br>
-
-              <div class="experience-badge">
-                <div class="badge-content">
-                  <span class="years">24/7</span>
-                  <span class="text">System Availability</span>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
     </section>
-    <!-- /Home About Section -->
 
-    <!-- Featured Departments Section -->
-    <section id="featured-departments" class="featured-departments section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Featured Departments</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row g-5">
-
-          <div class="col-lg-6" data-aos="zoom-in" data-aos-delay="100">
-            <div class="specialty-card">
-              <div class="specialty-content">
-                <div class="specialty-meta">
-                  <span class="specialty-label">Specialized Care</span>
+    <!-- Overview Section -->
+    <section id="overview" class="py-5 bg-white border-bottom">
+        <div class="container py-4">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="text-primary fw-bold text-uppercase tracking-wider small">System Architecture</span>
+                    <h2 class="fw-bold fs-2 mt-2 mb-4">Engineered for Complete Healthcare Visibility</h2>
+                    <p class="text-muted mb-4">
+                        Medical Unit unifies every facet of medical operations into a single pane of glass. Whether managing primary branch facilities or mobile health outreaches, administrators gain complete situational awareness through live tracking engines.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2 text-dark fw-semibold small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Multi-Branch Operations
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2 text-dark fw-semibold small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Real-Time Live Tracking
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2 text-dark fw-semibold small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Referral Generations
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2 text-dark fw-semibold small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Automated Audit Logs
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h3>Cardiovascular Medicine</h3>
-                <p>Advanced diagnostic imaging and interventional procedures for comprehensive heart health management
-                  with personalized treatment protocols.</p>
-                <div class="specialty-features">
-                  <span><i class="bi bi-check-circle-fill"></i>24/7 Emergency Cardiac Care</span>
-                  <span><i class="bi bi-check-circle-fill"></i>Minimally Invasive Procedures</span>
+                <div class="col-lg-6">
+                    <div class="p-4 bg-light rounded-4 border">
+                        <h4 class="fw-bold fs-5 mb-3 text-dark"><i class="bi bi-speedometer2 text-primary me-2"></i> Comprehensive Operational Metrics</h4>
+                        <ul class="list-unstyled d-flex flex-column gap-3 mb-0 text-secondary small">
+                            <li class="d-flex justify-content-between border-bottom pb-2">
+                                <span>Staff Directory & Profiles</span>
+                                <strong class="text-dark">Global & Branch-Isolated</strong>
+                            </li>
+                            <li class="d-flex justify-content-between border-bottom pb-2">
+                                <span>Medical & Treatment Logs</span>
+                                <strong class="text-dark">Vitals, Diagnosis, Notes</strong>
+                            </li>
+                            <li class="d-flex justify-content-between border-bottom pb-2">
+                                <span>Pharmaceutical Vaults</span>
+                                <strong class="text-dark">Dynamic Stock & Multi-Dispense</strong>
+                            </li>
+                            <li class="d-flex justify-content-between pb-0">
+                                <span>Outreach & Reports</span>
+                                <strong class="text-dark">Patient Registry & Analytics</strong>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <a href="department-details.html" class="specialty-link">
-                  Explore Cardiology <i class="bi bi-arrow-right"></i>
-                </a>
-              </div>
-              <div class="specialty-visual">
-                <img src="assets/img/health/cardiology-1.webp" alt="Cardiovascular Medicine" class="img-fluid">
-                <div class="visual-overlay">
-                  <i class="bi bi-heart-pulse"></i>
-                </div>
-              </div>
             </div>
-          </div><!-- End Specialty Card -->
-
-          <div class="col-lg-6" data-aos="zoom-in" data-aos-delay="200">
-            <div class="specialty-card">
-              <div class="specialty-content">
-                <div class="specialty-meta">
-                  <span class="specialty-label">Expert Care</span>
-                </div>
-                <h3>Neurological Sciences</h3>
-                <p>Cutting-edge neuroimaging and neurosurgical expertise for complex brain and spinal cord conditions
-                  with innovative treatment approaches.</p>
-                <div class="specialty-features">
-                  <span><i class="bi bi-check-circle-fill"></i>Advanced Brain Imaging</span>
-                  <span><i class="bi bi-check-circle-fill"></i>Robotic Surgery</span>
-                </div>
-                <a href="department-details.html" class="specialty-link">
-                  Explore Neurology <i class="bi bi-arrow-right"></i>
-                </a>
-              </div>
-              <div class="specialty-visual">
-                <img src="assets/img/health/neurology-4.webp" alt="Neurological Sciences" class="img-fluid">
-                <div class="visual-overlay">
-                  <i class="bi bi-cpu"></i>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Specialty Card -->
-
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="department-highlight">
-              <div class="highlight-icon">
-                <i class="bi bi-shield-plus"></i>
-              </div>
-              <h4>Orthopedic Surgery</h4>
-              <p>Comprehensive musculoskeletal care utilizing advanced arthroscopic techniques and joint replacement
-                procedures.</p>
-              <ul class="highlight-list">
-                <li>Sports Medicine</li>
-                <li>Joint Replacement</li>
-                <li>Spine Surgery</li>
-              </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
-            </div>
-          </div><!-- End Department Highlight -->
-
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-            <div class="department-highlight">
-              <div class="highlight-icon">
-                <i class="bi bi-people"></i>
-              </div>
-              <h4>Pediatric Care</h4>
-              <p>Child-centered healthcare services from newborn to adolescence with family-focused treatment
-                approaches.</p>
-              <ul class="highlight-list">
-                <li>Neonatal Intensive Care</li>
-                <li>Developmental Pediatrics</li>
-                <li>Pediatric Surgery</li>
-              </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
-            </div>
-          </div><!-- End Department Highlight -->
-
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
-            <div class="department-highlight">
-              <div class="highlight-icon">
-                <i class="bi bi-activity"></i>
-              </div>
-              <h4>Cancer Treatment</h4>
-              <p>Multidisciplinary oncology program offering personalized cancer care with latest therapeutic
-                innovations.</p>
-              <ul class="highlight-list">
-                <li>Precision Medicine</li>
-                <li>Immunotherapy</li>
-                <li>Radiation Oncology</li>
-              </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
-            </div>
-          </div><!-- End Department Highlight -->
-
         </div>
+    </section>
 
-        <div class="emergency-banner" data-aos="fade-up" data-aos-delay="400">
-          <div class="row align-items-center">
-            <div class="col-lg-8">
-              <div class="emergency-content">
-                <h3>Emergency Services Available 24/7</h3>
-                <p>Our emergency department is equipped with state-of-the-art technology and staffed by board-certified
-                  emergency physicians ready to provide immediate care.</p>
-              </div>
+    <!-- Features Overview -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container py-5">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="text-primary fw-bold text-uppercase tracking-wider small">Comprehensive Modules</span>
+                <h2 class="fw-bold fs-2 mt-2">Built for Precision, Security, and Speed</h2>
+                <p class="text-muted">Explore the powerful toolsets designed specifically for clinical excellence and pharmacy compliance.</p>
             </div>
-            <div class="col-lg-4 text-lg-end">
-              <a href="tel:+15551234567" class="emergency-btn">
-                <i class="bi bi-telephone-fill"></i>
-                Call Emergency: (555) 123-4567
-              </a>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-primary-subtle text-primary rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-capsule fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Drugs Vault & Dispensing</h4>
+                        <p class="text-muted small mb-0">Multi-select drug prescriptions with automatic vault balance checks, ACID-safe inventory deductions, and real-time transaction logging.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-success-subtle text-success rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-people-fill fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Staff & Medical Records</h4>
+                        <p class="text-muted small mb-0">Centralized profile tracking with encrypted credential views, role-based directory filtering, vitals monitoring, and thorough patient history.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-warning-subtle text-warning rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-heart-pulse-fill fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Outreach Section & Records</h4>
+                        <p class="text-muted small mb-0">Manage community and corporate medical outreach programs, track external patient logs, and maintain unified health metrics.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-info-subtle text-info rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-file-earmark-bar-graph-fill fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Reports & Referral Generation</h4>
+                        <p class="text-muted small mb-0">Instantly generate professional patient reports, medical summaries, and external clinic/hospital referral documentation.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-danger-subtle text-danger rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-diagram-3-fill fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Cross-Branch Operations</h4>
+                        <p class="text-muted small mb-0">Global administrative oversight for super admins combined with secure, isolated data boundaries for regional branch clinics.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 h-100 bg-white">
+                        <div class="bg-secondary-subtle text-secondary rounded-3 d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-shield-check fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold fs-5 text-dark mb-2">Live Tracking & Security</h4>
+                        <p class="text-muted small mb-0">Real-time live telemetry tracking counters, secure tokenized IDs, and robust AES-128-CBC credential encryption standards.</p>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
+    </section>
 
-      </div>
-
-    </section><!-- /Featured Departments Section -->
-
-    <!-- Featured Services Section -->
-    <section id="featured-services" class="featured-services section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Featured Services</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row g-0">
-
-          <div class="col-lg-8" data-aos="fade-right" data-aos-delay="200">
-            <div class="featured-service-main">
-              <div class="service-image-wrapper">
-                <img src="assets/img/health/consultation-4.webp" alt="Premier Healthcare Services" class="img-fluid"
-                  loading="lazy">
-                <div class="service-overlay">
-                  <div class="service-badge">
-                    <i class="bi bi-heart-pulse"></i>
-                    <span>Emergency Care</span>
-                  </div>
-                </div>
-              </div>
-              <div class="service-details">
-                <h2>Comprehensive Healthcare Excellence</h2>
-                <p>Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a. Vestibulum ante ipsum primis in faucibus
-                  orci luctus et ultrices posuere cubilia curae donec velit neque.</p>
-                <a href="#!" class="main-cta">Explore Our Services</a>
-              </div>
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="text-primary fw-bold text-uppercase tracking-wider small">Flexible Licensing</span>
+                <h2 class="fw-bold fs-2 mt-2">Transparent Plans for Any Organization Size</h2>
+                <p class="text-muted">Choose outright perpetual ownership or flexible monthly and yearly cloud subscriptions.</p>
             </div>
-          </div>
-
-          <div class="col-lg-4" data-aos="fade-left" data-aos-delay="300">
-            <div class="services-sidebar">
-
-              <div class="service-item" data-aos="fade-up" data-aos-delay="400">
-                <div class="service-icon-wrapper">
-                  <i class="bi bi-capsule"></i>
+            <div class="row g-4 align-items-stretch">
+                <!-- Outright Purchase (Most Popular) -->
+                <div class="col-lg-4">
+                    <div class="pricing-card popular p-4 p-lg-5 h-100 d-flex flex-column justify-content-between bg-white shadow-sm">
+                        <div>
+                            <h3 class="fw-bold fs-4 mb-2">Outright Purchase</h3>
+                            <p class="text-muted small">Complete source license for self-hosted enterprise deployment. Preferred by most clinics.</p>
+                            <div class="my-4">
+                                <div class="display-6 fw-extrabold text-primary">$3,025<span class="fs-6 text-muted fw-normal"> / lifetime</span></div>
+                                <div class="text-muted fw-semibold small mt-1">₦4,000,000 / lifetime</div>
+                            </div>
+                            <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Full Source Code & Database Access</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> One-Time Payment, Lifetime Ownership</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> On-Premise / Custom Server Setup</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> All Modules & Multi-Branch Tools Included</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> 3 Months Free Maintenance & Customization</li>
+                            </ul>
+                        </div>
+                        <a href="checkout.php?plan=outright" class="btn btn-primary fw-bold rounded-pill py-2 w-100 shadow-sm">Get Outright License</a>
+                    </div>
                 </div>
-                <div class="service-info">
-                  <h4>Dermatology Clinic</h4>
-                  <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-                  <a href="#!" class="service-link">Learn More</a>
+                <!-- Yearly Plan -->
+                <div class="col-lg-4">
+                    <div class="pricing-card p-4 p-lg-5 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h3 class="fw-bold fs-4 mb-2">Annual SaaS</h3>
+                            <p class="text-muted small">Cloud-hosted convenience for growing medical centers. Save 20% annually.</p>
+                            <div class="my-4">
+                                <div class="display-6 fw-extrabold text-dark">$2,000<span class="fs-6 text-muted fw-normal"> / year</span></div>
+                                <div class="text-muted fw-semibold small mt-1">₦2,640,000 / year</div>
+                            </div>
+                            <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Full Multi-Branch Roster & Vault Access</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Priority 24/7 Technical Support</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Advanced Audit & Stock Analytics</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Automated Cloud Backups & Updates</li>
+                            </ul>
+                        </div>
+                        <a href="checkout.php?plan=annual" class="btn btn-outline-primary fw-bold rounded-pill py-2 w-100">Choose Annual Plan</a>
+                    </div>
                 </div>
-              </div>
-
-              <div class="service-item" data-aos="fade-up" data-aos-delay="500">
-                <div class="service-icon-wrapper">
-                  <i class="bi bi-bandaid"></i>
+                <!-- Monthly Plan -->
+                <div class="col-lg-4">
+                    <div class="pricing-card p-4 p-lg-5 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h3 class="fw-bold fs-4 mb-2">Monthly Cloud</h3>
+                            <p class="text-muted small">Ideal for pilot testing and small clinics looking for low initial startup costs.</p>
+                            <div class="my-4">
+                                <div class="display-6 fw-extrabold text-dark">$130<span class="fs-6 text-muted fw-normal"> / month</span></div>
+                                <div class="text-muted fw-semibold small mt-1">₦171,600 / month</div>
+                            </div>
+                            <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Core Multi-Branch Features</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Automated Multi-Drug Dispensing</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Standard Cloud Hosting</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Standard Email Support</li>
+                            </ul>
+                        </div>
+                        <a href="checkout.php?plan=monthly" class="btn btn-outline-dark fw-bold rounded-pill py-2 w-100">Get Started Monthly</a>
+                    </div>
                 </div>
-                <div class="service-info">
-                  <h4>Surgery Center</h4>
-                  <p>Donec rutrum congue leo eget malesuada curabitur arcu erat accumsan id imperdiet et porttitor at
-                    sem.</p>
-                  <a href="#!" class="service-link">Learn More</a>
-                </div>
-              </div>
-
-              <div class="service-item" data-aos="fade-up" data-aos-delay="600">
-                <div class="service-icon-wrapper">
-                  <i class="bi bi-activity"></i>
-                </div>
-                <div class="service-info">
-                  <h4>Diagnostics Lab</h4>
-                  <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui cras ultricies ligula sed
-                    magna.</p>
-                  <a href="#!" class="service-link">Learn More</a>
-                </div>
-              </div>
-
             </div>
-          </div>
-
         </div>
+    </section>
 
-        <div class="specialties-grid" data-aos="fade-up" data-aos-delay="300">
-          <div class="row align-items-center">
-
-            <div class="col-lg-3 col-md-6">
-              <div class="specialty-card">
-                <div class="specialty-image">
-                  <img src="assets/img/health/maternal-2.webp" alt="Maternal Care" class="img-fluid" loading="lazy">
-                </div>
-                <div class="specialty-content">
-                  <h5>Maternal Care</h5>
-                  <span>Expert pregnancy &amp; delivery support</span>
-                </div>
-              </div>
+    <!-- Testimonials & Recommendations -->
+    <section id="testimonials" class="py-5 bg-light">
+        <div class="container py-5">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="text-primary fw-bold text-uppercase tracking-wider small">Trusted Feedback</span>
+                <p class="text-muted">See what pharmacy operators and medical directors say about Medical Unit.</p>
             </div>
-
-            <div class="col-lg-3 col-md-6">
-              <div class="specialty-card">
-                <div class="specialty-image">
-                  <img src="assets/img/health/vaccination-3.webp" alt="Vaccination" class="img-fluid" loading="lazy">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100 d-flex flex-column justify-content-between bg-white">
+                        <div>
+                            <div class="text-warning mb-3">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                            </div>
+                            <p class="text-dark fst-italic mb-4">"Managing multi-branch operations and inventory synchronization across our retail pharmacy outlets used to be cumbersome. Medical Unit's vault management and real-time live tracking changed everything for us."</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary text-white fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">MP</div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Pharm. Joke Adekola</h6>
+                                <p class="text-muted small mb-0">Operations Director, Medplus Pharmacy Nigeria</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="specialty-content">
-                  <h5>Vaccination</h5>
-                  <span>Complete immunization programs</span>
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100 d-flex flex-column justify-content-between bg-white">
+                        <div>
+                            <div class="text-warning mb-3">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                            </div>
+                            <p class="text-dark fst-italic mb-4">"The security, accuracy of patient records, and seamless referral generation tools have streamlined our clinical workflows immensely. It's a robust solution that meets high Canadian healthcare compliance standards."</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success text-white fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">TH</div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Dr. Robert Chen</h6>
+                                <p class="text-muted small mb-0">Chief Medical Officer, Toronto General Hospital Network, Canada</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-
-            <div class="col-lg-3 col-md-6">
-              <div class="specialty-card">
-                <div class="specialty-image">
-                  <img src="assets/img/health/emergency-1.webp" alt="Emergency Care" class="img-fluid" loading="lazy">
-                </div>
-                <div class="specialty-content">
-                  <h5>Emergency Care</h5>
-                  <span>24/7 critical care services</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-              <div class="specialty-card">
-                <div class="specialty-image">
-                  <img src="assets/img/health/facilities-6.webp" alt="Advanced Tech" class="img-fluid" loading="lazy">
-                </div>
-                <div class="specialty-content">
-                  <h5>Advanced Technology</h5>
-                  <span>State-of-the-art medical equipment</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
         </div>
-
-      </div>
-
-    </section><!-- /Featured Services Section -->
-
-
-    <!-- Call To Action Section -->
-    <section id="call-to-action" class="call-to-action section light-background">
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="hero-content">
-          <div class="row align-items-center">
-
-            <div class="col-lg-6">
-              <div class="content-wrapper" data-aos="fade-up" data-aos-delay="200">
-                <h1>Excellence in Medical Care, Every Day</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
-
-                <div class="cta-wrapper">
-                  <a href="appointment.html" class="primary-cta">
-                    <span>Schedule Consultation</span>
-                    <i class="bi bi-arrow-right"></i>
-                  </a>
-                  <a href="services.html" class="secondary-cta">
-                    <span>Explore Services</span>
-                    <i class="bi bi-arrow-right"></i>
-                  </a>
+    </section>
+    <!-- FAQ Section -->
+    <section id="faq" class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="text-primary fw-bold text-uppercase tracking-wider small">Got Questions?</span>
+                <h2 class="fw-bold fs-2 mt-2">Frequently Asked Questions</h2>
+                <p class="text-muted">Everything you need to know about multi-branch setup, vault security, and licensing.</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion faq-accordion" id="faqAccordion">
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    How does the multi-branch drug vault and dispensing work?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    When medical personnel prescribe one or multiple drugs during consultation, the system executes an ACID-compliant transaction. It locks the specific branch vault row (`FOR UPDATE`), verifies balance availability, deducts precise quantities, and logs every action in the transparency audit trail.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    What are the benefits of the Outright Purchase plan?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    The Outright Purchase gives you complete ownership of the source code and database architecture for a single one-time payment. You can host it on your own private local or cloud servers with zero recurring subscription fees and complete data sovereignty.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    How do outreach sections and referral generations function?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    The outreach module lets you record external community patients and medical events separately. Furthermore, the referral generation engine allows practitioners to instantly produce standardized professional referral letters and patient status summaries.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    Can we pay in Nigerian Naira (₦) as well as US Dollars ($)?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    Yes! Local institutions in Nigeria can complete payments directly in Naira via our supported local payment gateways and bank transfer options, while international clients can pay securely in USD.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingFive">
+                                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                    Is patient data secure and compliant with health regulations?
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    Absolutely. Medical Unit is built with industry-standard encryption protocols, role-based access control, and complete audit logs to ensure total compliance with data privacy acts and medical confidentiality standards.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-3xs">
+                            <h2 class="accordion-header" id="headingSix">
+                                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
+                                    What kind of technical support is provided after purchase?
+                                </button>
+                            </h2>
+                            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-muted small lh-base">
+                                    All outright purchases include 1 year of free maintenance, system updates, and technical assistance. Annual and monthly cloud subscribers enjoy continuous 24/7 priority or standard support depending on their chosen tier.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-
-            <div class="col-lg-6">
-              <div class="image-container" data-aos="fade-left" data-aos-delay="300">
-                <img src="assets/img/health/facilities-9.webp" alt="Medical Excellence" class="img-fluid">
-              </div>
-            </div>
-
-          </div>
         </div>
+    </section>
 
-        <div class="features-section">
-
-          <div class="row g-0">
-
-            <div class="col-lg-4">
-              <div class="feature-block" data-aos="fade-up" data-aos-delay="200">
-                <div class="feature-icon">
-                  <i class="bi bi-shield-check"></i>
+    <!-- Footer -->
+    <footer class="py-5 text-white bg-black">
+        <div class="container py-4">
+            <div class="row g-4 justify-content-between align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="bi bi-hospital-fill"></i>
+                        </div>
+                        <span class="fw-bold fs-5 text-white tracking-tight">Medical<span class="text-primary">s</span></span>
+                    </div>
+                    <p class="text-white small mb-0">Enterprise-grade clinic operations management suite built for maximum compliance, cross-branch tracking, and pharmaceutical vault security.</p>
                 </div>
-                <h3>Advanced Technology</h3>
-                <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-                  laborum.</p>
-              </div>
-            </div>
-
-            <div class="col-lg-4">
-              <div class="feature-block" data-aos="fade-up" data-aos-delay="300">
-                <div class="feature-icon">
-                  <i class="bi bi-clock"></i>
+                <div class="col-md-4 text-md-end">
+                    <p class="text-white small mb-0">&copy; 2026 Medicals. All rights reserved.</p>
                 </div>
-                <h3>24/7 Availability</h3>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur
-                  excepteur.</p>
-              </div>
             </div>
-
-            <div class="col-lg-4">
-              <div class="feature-block" data-aos="fade-up" data-aos-delay="400">
-                <div class="feature-icon">
-                  <i class="bi bi-people"></i>
-                </div>
-                <h3>Expert Team</h3>
-                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium
-                  totam rem.</p>
-              </div>
-            </div>
-
-          </div>
-
         </div>
+    </footer>
 
-        <div class="contact-block">
-          <div class="row">
-
-            <div class="col-lg-8">
-              <div class="contact-content" data-aos="fade-up" data-aos-delay="200">
-                <h2>Need Immediate Medical Assistance?</h2>
-                <p>Our emergency response team is available around the clock to provide immediate medical support when
-                  you need it most.</p>
-              </div>
-            </div>
-
-            <div class="col-lg-4">
-              <div class="contact-actions" data-aos="fade-up" data-aos-delay="300">
-                <a href="tel:5551234567" class="emergency-call">
-                  <i class="bi bi-telephone"></i>
-                  <span>(555) 123-4567</span>
-                </a>
-                <a href="contact.html" class="contact-link">Find Location</a>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-    </section><!-- /Call To Action Section -->
-
-  </main>
-
-  <?php
-  include('inc/footer.php');
-  ?>
-
-  <!-- Scroll Top -->
-  <a href="#!" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
-      class="bi bi-arrow-up-short"></i></a>
-
-  <!-- Preloader -->
-  <div id="preloader"></div>
-
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-  <!-- Main JS File -->
-  <script src="assets/js/main.js"></script>
-
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -334,16 +334,20 @@ if (!isset($_SESSION['user_id'])) {
                                 <div class="col-12 col-md-7 col-lg-5">
                                     <div class="row g-2">
                                         <div class="col-6 col-sm-4">
+                                            <?php
+                                            // Pre-capture status filter value from URL if set, to keep dropdown selection synced
+                                            $current_get_status = isset($_GET['status']) ? strtolower(trim($_GET['status'])) : '';
+                                            ?>
                                             <select id="medicalStatusFilter" class="form-select form-select-sm shadow-3xs">
                                                 <option value="">All Statuses</option>
-                                                <option value="open">Open Case</option>
-                                                <option value="under_treatment">Under Treatment</option>
-                                                <option value="closed">Closed Case</option>
+                                                <option value="open" <?php echo ($current_get_status === 'open') ? 'selected' : ''; ?>>Open Case</option>
+                                                <option value="under_treatment" <?php echo ($current_get_status === 'under_treatment') ? 'selected' : ''; ?>>Under Treatment</option>
+                                                <option value="closed" <?php echo ($current_get_status === 'closed') ? 'selected' : ''; ?>>Closed Case</option>
                                             </select>
                                         </div>
                                         <div class="col-6 col-sm-4">
                                             <select id="medicalBranchFilter" class="form-select form-select-sm shadow-3xs">
-                                                <option value="">All Branches</option>
+                                                <option value="">All Locations</option>
                                                 <!-- Programmatically Auto-Populated by JS Module below -->
                                             </select>
                                         </div>
@@ -370,23 +374,36 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
                         <!-- HEADER -->
                         <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom">
-                            <h4 class="card-title mb-0" style="color: #1e293b; font-weight: 600;">Staffs Medical Intake Logs Workspace</h4>
-                            <a href="add_medical_record.php" class="btn btn-success btn-sm px-3 py-2 fw-medium" style="border-radius: 8px;">
-                                + ADD MEDICAL RECORD
+                            <h4 class="card-title mb-0" style="color: #1e293b; font-weight: 600;">Patient Records Workspace</h4>
+                            <a href="add_patient_record.php" class="btn btn-success btn-sm px-3 py-2 fw-medium" style="border-radius: 8px;">
+                                + ADD PATIENT RECORD
                             </a>
                         </div>
 
+                        <?php
+                        if (isset($_SESSION['msg'])) {
+                            $msg = $_SESSION['msg'];
+                            $msg_type = $_SESSION['msg_type'] ?? 'info';
+                            unset($_SESSION['msg']);
+                            unset($_SESSION['msg_type']);
+                        ?>
+                            <div class="alert m-3 alert-<?php echo $msg_type; ?> alert-dismissible fade show">
+                                <?php echo htmlspecialchars($msg); ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <?php } ?>
+
                         <div class="table-responsive">
                             <div class="custom-table-container">
-                                <table class="modern-table align-middle mb-0" id="medicalRecordsWorkspaceTable" style="width: 100%; min-width: 2400px;">
+                                <table class="modern-table align-middle mb-0" id="medicalRecordsWorkspaceTable" style="width: 100%; min-width: 3200px;">
                                     <thead>
                                         <tr>
                                             <th class="small-field">S/N</th>
-                                            <th class="medium-field">STAFF NAME</th>
-                                            <th class="medium-field text-center">STAFF PASSPORT</th>
-                                            <th class="medium-field">STAFF BRANCH</th>
-                                            <th class="medium-field">COMPANY</th>
-                                            <th class="medium-field">DEPARTMENT</th>
+                                            <th class="medium-field">PATIENT NAME</th>
+                                            <th class="medium-field">PATIENT LOCATION</th>
+                                            <th class="medium-field">PHONE NUMBER</th>
+                                            <th class="medium-field">GENDER / DOB</th>
+                                            <th class="medium-field">BLOOD / GENOTYPE</th>
                                             <th class="medium-field">INTAKE TIME</th>
                                             <th class="medium-field">RELEASE TIME</th>
 
@@ -404,13 +421,17 @@ if (!isset($_SESSION['user_id'])) {
                                             <th class="small-field">BLOOD PRESSURE</th>
                                             <th class="small-field">TEMPERATURE</th>
                                             <th class="small-field">PULSE RATE</th>
+                                            <th class="small-field">RESPIRATORY RATE</th>
+                                            <th class="small-field">OXYGEN SATURATION</th>
+                                            <th class="small-field">WEIGHT</th>
+                                            <th class="small-field">HEIGHT</th>
+                                            <th class="small-field">BLOOD SUGAR</th>
 
                                             <th class="small-field">FOLLOW UP REQUIRED</th>
                                             <th class="medium-field">FOLLOW UP DATE</th>
                                             <th class="small-field">RECORD STATUS</th>
 
                                             <th class="medium-field">CREATED AT</th>
-                                            <th class="medium-field">UPDATED AT</th>
 
                                             <th class="medium-field text-end">ACTIONS</th>
                                         </tr>
@@ -426,6 +447,13 @@ if (!isset($_SESSION['user_id'])) {
                                             session_start();
                                         }
 
+                                        $user_role = strtolower($_SESSION['role'] ?? '');
+                                        $user_branch = trim($_SESSION['branch'] ?? '');
+
+                                        // Capture query parameters for filtering (status or branch/location) from URL if passed from dashboard cards
+                                        $filter_status = strtolower(trim($_GET['status'] ?? ''));
+                                        $filter_branch = trim($_GET['branch'] ?? '');
+
                                         // Declare encryption helper function safely if not already declared globally
                                         if (!function_exists('encryptId')) {
                                             function encryptId($id)
@@ -435,27 +463,38 @@ if (!isset($_SESSION['user_id'])) {
                                             }
                                         }
 
-                                        // Fallback tracking metrics from session contexts
-                                        $user_role = strtolower($_SESSION['role'] ?? '');
-                                        $user_branch = $_SESSION['branch'] ?? '';
+                                        // Base SQL query setup with query parameter filtering support
+                                        $query = "SELECT * FROM patient_medical_records WHERE 1=1";
+                                        $params = [];
+                                        $types = "";
 
-                                        // Structural validation: Router isolates log views strictly by branch ownership limits
-                                        if ($user_role === 'super-admin') {
-                                            $query = "SELECT smr.*, s.passport 
-                                          FROM staff_medical_records smr 
-                                          LEFT JOIN staffs s ON smr.staff_name = s.fullname 
-                                          ORDER BY smr.id DESC";
-                                            $stmt = $conn->prepare($query);
-                                        } else {
-                                            $query = "SELECT smr.*, s.passport 
-                                          FROM staff_medical_records smr 
-                                          LEFT JOIN staffs s ON smr.staff_name = s.fullname 
-                                          WHERE LOWER(TRIM(smr.staff_branch)) = LOWER(TRIM(?))
-                                          ORDER BY smr.id DESC";
-                                            $stmt = $conn->prepare($query);
-                                            $stmt->bind_param("s", $user_branch);
+                                        if ($user_role === 'adhoc-user' && !empty($user_branch)) {
+                                            $query .= " AND LOWER(TRIM(patient_location)) = LOWER(TRIM(?))";
+                                            $params[] = $user_branch;
+                                            $types .= "s";
+                                        } elseif (!empty($filter_branch)) {
+                                            $query .= " AND LOWER(TRIM(patient_location)) = LOWER(TRIM(?))";
+                                            $params[] = $filter_branch;
+                                            $types .= "s";
                                         }
 
+                                        if (!empty($filter_status)) {
+                                            if ($filter_status === 'closed') {
+                                                // Handle closed cases matching any status that isn't explicitly open or under_treatment (or if specifically marked closed)
+                                                $query .= " AND (LOWER(TRIM(record_status)) = 'closed' OR (LOWER(TRIM(record_status)) != 'open' AND LOWER(TRIM(record_status)) != 'under_treatment'))";
+                                            } else {
+                                                $query .= " AND LOWER(TRIM(record_status)) = LOWER(TRIM(?))";
+                                                $params[] = $filter_status;
+                                                $types .= "s";
+                                            }
+                                        }
+
+                                        $query .= " ORDER BY id DESC";
+
+                                        $stmt = $conn->prepare($query);
+                                        if (!empty($params)) {
+                                            $stmt->bind_param($types, ...$params);
+                                        }
                                         $stmt->execute();
                                         $select_logs = $stmt->get_result();
 
@@ -464,11 +503,14 @@ if (!isset($_SESSION['user_id'])) {
 
                                             while ($row = $select_logs->fetch_assoc()) {
                                                 $id = $row['id'];
-                                                $staff_name = $row['staff_name'];
-                                                $passport = trim($row['passport'] ?? '');
-                                                $staff_branch = $row['staff_branch'];
-                                                $company = $row['company'] ?? '';
-                                                $department = $row['department'];
+                                                $patient_name = $row['patient_name'];
+                                                $patient_location = $row['patient_location'];
+                                                $date_of_birth = $row['date_of_birth'] ?? '—';
+                                                $gender = $row['gender'] ?? '—';
+                                                $blood_group = $row['blood_group'] ?? '—';
+                                                $genotype = $row['genotype'] ?? '—';
+                                                $phone_number = $row['phone_number'] ?? '—';
+
                                                 $intake_time = $row['intake_time'];
                                                 $release_time = $row['release_time'];
 
@@ -480,22 +522,24 @@ if (!isset($_SESSION['user_id'])) {
                                                 $dosage_instructions = $row['dosage_instructions'];
 
                                                 $attended_by = $row['attended_by'];
-
                                                 $condition_on_admission = $row['condition_on_admission'];
                                                 $condition_on_release = $row['condition_on_release'];
 
                                                 $blood_pressure = $row['blood_pressure'];
                                                 $temperature = $row['temperature'];
                                                 $pulse_rate = $row['pulse_rate'];
+                                                $respiratory_rate = $row['respiratory_rate'];
+                                                $oxygen_saturation = $row['oxygen_saturation'];
+                                                $weight = $row['weight'];
+                                                $height = $row['height'];
+                                                $blood_sugar = $row['blood_sugar'];
 
                                                 $follow_up_required = $row['follow_up_required'];
                                                 $follow_up_date = $row['follow_up_date'];
                                                 $record_status = strtolower($row['record_status']);
-
                                                 $created_at = $row['created_at'];
-                                                $updated_at = $row['updated_at'];
 
-                                                // Fix: Updated Status Badge System to target actual ENUM schema definitions
+                                                // Status Badge Mapping
                                                 if ($record_status === "open") {
                                                     $status_class = "badge-soft-success";
                                                 } elseif ($record_status === "under_treatment") {
@@ -504,86 +548,45 @@ if (!isset($_SESSION['user_id'])) {
                                                     $status_class = "badge-soft-secondary";
                                                 }
 
-                                                // Determine image file paths dynamically relative to application context depth
-                                                $passport_src = '';
-                                                if (!empty($passport)) {
-                                                    $paths_to_test = [
-                                                        "uploads/" . $passport,
-                                                        "../uploads/" . $passport,
-                                                        "../../uploads/" . $passport,
-                                                        "admin/uploads/" . $passport,
-                                                        "../admin/uploads/" . $passport
-                                                    ];
-
-                                                    foreach ($paths_to_test as $test_path) {
-                                                        if (file_exists($test_path) && !is_dir($test_path)) {
-                                                            $passport_src = $test_path;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-
-                                                // Build comprehensive string indexing string array mapping all database cell metadata values
+                                                // Build comprehensive search index payload string
                                                 $search_payload = strtolower(implode(' ', array_filter([
                                                     $sn,
-                                                    $staff_name,
-                                                    $staff_branch,
-                                                    $company,
-                                                    $department,
+                                                    $patient_name,
+                                                    $patient_location,
+                                                    $phone_number,
+                                                    $gender,
+                                                    $blood_group,
+                                                    $genotype,
                                                     $intake_time,
-                                                    $release_time,
                                                     $diagnosis,
                                                     $symptoms,
                                                     $medical_notes,
                                                     $treatment_given,
                                                     $drugs_given,
-                                                    $dosage_instructions,
                                                     $attended_by,
-                                                    $condition_on_admission,
-                                                    $condition_on_release,
-                                                    $blood_pressure,
-                                                    $temperature,
-                                                    $pulse_rate,
-                                                    $follow_up_required,
-                                                    $follow_up_date,
-                                                    $record_status,
-                                                    $created_at,
-                                                    $updated_at
+                                                    $record_status
                                                 ])));
                                         ?>
                                                 <!-- Dynamic Search Target HTML5 Row Structures -->
                                                 <tr class="searchable-medical-row"
                                                     data-search-index="<?php echo htmlspecialchars($search_payload); ?>"
                                                     data-status-state="<?php echo $record_status; ?>"
-                                                    data-branch-state="<?php echo htmlspecialchars(strtolower(trim($staff_branch))); ?>"
+                                                    data-branch-state="<?php echo htmlspecialchars(strtolower(trim($patient_location))); ?>"
                                                     data-created-date="<?php echo (!empty($created_at) && $created_at !== '0000-00-00 00:00:00') ? date('Y-m-d', strtotime($created_at)) : ''; ?>">
 
                                                     <!-- Dynamic S/N Counter -->
                                                     <td>
                                                         <span class="sn-badge">#<?php echo sprintf('%02d', $sn++); ?></span>
                                                     </td>
-                                                    <td><strong><?php echo htmlspecialchars($staff_name); ?></strong></td>
-
-                                                    <!-- Lined Passport Avatar Frame Layer -->
-                                                    <td class="text-center">
-                                                        <div class="passport-container d-flex justify-content-center align-items-center">
-                                                            <?php if (!empty($passport_src)) { ?>
-                                                                <div class="passport-frame shadow-sm" style="width: 45px; height: 45px; overflow: hidden; border-radius: 50%; border: 2px solid #e9ecef;">
-                                                                    <img src="<?php echo htmlspecialchars($passport_src); ?>" alt="Staff Passport" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
-                                                                </div>
-                                                            <?php } else { ?>
-                                                                <span class="badge bg-light text-muted border text-xs py-1 px-2">No Photo</span>
-                                                            <?php } ?>
-                                                        </div>
-                                                    </td>
-
-                                                    <td><span class="text-dark fw-medium"><?php echo htmlspecialchars($staff_branch); ?></span></td>
-                                                    <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($company ? $company : '—'); ?></span></td>
-                                                    <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($department); ?></span></td>
+                                                    <td><strong><?php echo htmlspecialchars($patient_name); ?></strong></td>
+                                                    <td><span class="text-dark fw-medium"><?php echo htmlspecialchars($patient_location); ?></span></td>
+                                                    <td><?php echo htmlspecialchars($phone_number); ?></td>
+                                                    <td><small><?php echo htmlspecialchars($gender); ?> / <?php echo htmlspecialchars($date_of_birth); ?></small></td>
+                                                    <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($blood_group); ?> | <?php echo htmlspecialchars($genotype); ?></span></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($intake_time); ?></small></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($release_time ? $release_time : '—'); ?></small></td>
 
-                                                    <!-- Dynamic Text Truncation wrappers to balance layout density -->
+                                                    <!-- Dynamic Text Truncation wrappers -->
                                                     <td>
                                                         <div class="text-truncate-modern" title="<?php echo htmlspecialchars($diagnosis); ?>">
                                                             <?php echo htmlspecialchars($diagnosis); ?>
@@ -616,14 +619,18 @@ if (!isset($_SESSION['user_id'])) {
                                                     </td>
 
                                                     <td><strong><?php echo htmlspecialchars($attended_by); ?></strong></td>
-
                                                     <td><?php echo htmlspecialchars($condition_on_admission); ?></td>
                                                     <td><?php echo htmlspecialchars($condition_on_release ? $condition_on_release : '—'); ?></td>
 
                                                     <!-- Clinical Medical Vitals Representation -->
-                                                    <td><span class="vital-chip bp"><?php echo htmlspecialchars($blood_pressure); ?></span></td>
-                                                    <td><span class="vital-chip temp"><?php echo htmlspecialchars($temperature); ?>°C</span></td>
-                                                    <td><span class="vital-chip pulse"><?php echo htmlspecialchars($pulse_rate); ?> bpm</span></td>
+                                                    <td><span class="vital-chip bp"><?php echo htmlspecialchars($blood_pressure ?: '—'); ?></span></td>
+                                                    <td><span class="vital-chip temp"><?php echo htmlspecialchars($temperature ? $temperature . '°C' : '—'); ?></span></td>
+                                                    <td><span class="vital-chip pulse"><?php echo htmlspecialchars($pulse_rate ? $pulse_rate . ' bpm' : '—'); ?></span></td>
+                                                    <td><span class="vital-chip"><?php echo htmlspecialchars($respiratory_rate ?: '—'); ?></span></td>
+                                                    <td><span class="vital-chip"><?php echo htmlspecialchars($oxygen_saturation ?: '—'); ?></span></td>
+                                                    <td><span class="vital-chip"><?php echo htmlspecialchars($weight ?: '—'); ?></span></td>
+                                                    <td><span class="vital-chip"><?php echo htmlspecialchars($height ?: '—'); ?></span></td>
+                                                    <td><span class="vital-chip"><?php echo htmlspecialchars($blood_sugar ?: '—'); ?></span></td>
 
                                                     <td><?php echo ucfirst(htmlspecialchars($follow_up_required)); ?></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($follow_up_date ? $follow_up_date : '—'); ?></small></td>
@@ -635,22 +642,14 @@ if (!isset($_SESSION['user_id'])) {
                                                     </td>
 
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($created_at); ?></small></td>
-                                                    <td><small class="text-muted"><?php echo htmlspecialchars($updated_at); ?></small></td>
 
-                                                    <!-- Action Controls Layout (With Encrypted IDs & Referral Link) -->
+                                                    <!-- Action Controls Layout -->
                                                     <td class="text-end">
                                                         <div class="action-btns justify-content-end gap-1">
-                                                            <a href="view_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-info btn-icon-sm">View</a>
-                                                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super-admin'): ?>
-                                                                <a href="referral-letter.php?ref_id=<?php echo urlencode(encryptId($id)); ?>"
-                                                                    class="btn btn-outline-success btn-icon-sm"
-                                                                    title="Generate Medical Referral Note"
-                                                                    target="_blank">
-                                                                    Referral
-                                                                </a>
-                                                            <?php endif; ?>
-                                                            <a href="edit_log.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-primary btn-icon-sm">Edit</a>
-                                                            <a href="delete_log.php?id=<?php echo urlencode(encryptId($id)); ?>"
+                                                            <a href="view_patient.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-info btn-icon-sm">View</a>
+                                                            <a href="patient_report.php?id=<?php echo urlencode(encryptId($id)); ?>" target="_blank" class="btn btn-outline-secondary btn-icon-sm">Report</a>
+                                                            <a href="edit_patient.php?id=<?php echo urlencode(encryptId($id)); ?>" class="btn btn-outline-primary btn-icon-sm">Edit</a>
+                                                            <a href="delete_patient.php?id=<?php echo urlencode(encryptId($id)); ?>"
                                                                 class="btn btn-outline-danger btn-icon-sm"
                                                                 onclick="return confirm('Are you sure you want to delete this medical log?');">
                                                                 Delete
@@ -663,8 +662,8 @@ if (!isset($_SESSION['user_id'])) {
                                         } else {
                                             ?>
                                             <tr class="db-empty-fallback-row">
-                                                <td colspan="26" class="text-center py-5 text-muted">
-                                                    <div class="py-3">No medical intake records found registered down inside logs database for your branch.</div>
+                                                <td colspan="30" class="text-center py-5 text-muted">
+                                                    <div class="py-3">No patient medical intake records found registered in the database.</div>
                                                 </td>
                                             </tr>
                                         <?php
@@ -674,11 +673,12 @@ if (!isset($_SESSION['user_id'])) {
 
                                         <!-- Hidden Client-Side Zero Results Feedback Alert Node Layer -->
                                         <tr id="jsZeroMatchFallbackRow" class="d-none">
-                                            <td colspan="26" class="text-center py-5 text-muted bg-light-subtle fw-medium">
+                                            <td colspan="30" class="text-center py-5 text-muted bg-light-subtle fw-medium">
                                                 No medical intake tracking logs discovered matching your selected omni filter criteria.
                                             </td>
                                         </tr>
                                     </tbody>
+
                                 </table>
                             </div>
                         </div>
@@ -704,13 +704,13 @@ if (!isset($_SESSION['user_id'])) {
                     const visibleLogsIndicator = document.getElementById('visibleLogsMetric');
                     const totalLogsIndicator = document.getElementById('totalLogsMetric');
 
-                    // 1. Programmatically Extract Unique Registered Branches for Dropdown Target Options Array
+                    // 1. Programmatically Extract Unique Registered Locations for Dropdown Target Options Array
                     const uniqueBranches = new Set();
                     rows.forEach(row => {
                         const rawBranchAttr = row.getAttribute('data-branch-state');
                         if (rawBranchAttr) {
-                            // Re-harvest formal localized capitalization display string safely from cell 4 (Index 3)
-                            const branchText = row.cells[3]?.textContent?.trim();
+                            // Harvest formal localized capitalization display string from cell index 2 (Patient Location column)
+                            const branchText = row.cells[2]?.textContent?.trim();
                             if (branchText) {
                                 uniqueBranches.add(JSON.stringify({
                                     value: rawBranchAttr,
@@ -746,9 +746,17 @@ if (!isset($_SESSION['user_id'])) {
                             const branchState = row.getAttribute('data-branch-state') || '';
                             const createdDateStr = row.getAttribute('data-created-date') || '';
 
-                            // Conditional Matrix Logic Validation Check
+                            // Conditional Matrix Logic Validation Check (handling closed grouping equivalence mapping if needed)
+                            let matchesStatus = true;
+                            if (filterStatus !== '') {
+                                if (filterStatus === 'closed') {
+                                    matchesStatus = (statusState === 'closed' || (statusState !== 'open' && statusState !== 'under_treatment'));
+                                } else {
+                                    matchesStatus = (statusState === filterStatus);
+                                }
+                            }
+
                             const matchesSearch = query === '' || indexPayload.includes(query);
-                            const matchesStatus = filterStatus === '' || statusState === filterStatus;
                             const matchesBranch = filterBranch === '' || branchState === filterBranch;
                             const matchesDate = filterDate === '' || createdDateStr === filterDate;
 
@@ -782,7 +790,6 @@ if (!isset($_SESSION['user_id'])) {
                     filterWorkspaceGrid();
                 });
             </script>
-
             <?php
             include('./inc/footer.php');
             ?>
@@ -802,4 +809,3 @@ if (!isset($_SESSION['user_id'])) {
 </body>
 
 </html>
-

@@ -425,7 +425,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </div>
                             <?php } ?>
 
-                       <div class="custom-table-container">
+                            <div class="custom-table-container">
                                 <table class="modern-table table-hover align-middle mb-0" id="staffRecordsDirectoryWorkspaceTable" style="width: 100%; min-width: 2700px;">
                                     <thead>
                                         <tr>

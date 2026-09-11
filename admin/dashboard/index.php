@@ -46,8 +46,9 @@ if (!isset($_SESSION['user_id'])) {
             </header>
 
             <div class="page-heading">
-                <h3>Profile Statistics</h3>
+                <h3><?php echo (strtolower($_SESSION['role'] ?? '') === 'adhoc-user') ? 'Outreach System Statistics' : 'Staffs Profile Statistic'; ?></h3>
             </div>
+
             <div class="page-content">
                 <section class="row">
                     <div class="col-12 col-lg-8">
@@ -64,46 +65,90 @@ if (!isset($_SESSION['user_id'])) {
                         $user_role = strtolower($_SESSION['role'] ?? '');
                         $user_branch = $_SESSION['branch'] ?? '';
 
-                        // GLOBAL COUNT: Total Branches is now ALWAYS pulled system-wide regardless of role
-                        $total_branches_query = mysqli_query($conn, "SELECT COUNT(*) AS total_branches FROM branches");
-                        $total_branches_fetch = mysqli_fetch_assoc($total_branches_query);
-                        $total_branches = $total_branches_fetch['total_branches'] ?? 0;
+                        if ($user_role === 'adhoc-user') {
+                            // 1. Registered Patients (from patient_medical_records table) filtered by logged-in user branch/location
+                            $total_patients_stmt = $conn->prepare("SELECT COUNT(*) AS total_patients FROM patient_medical_records WHERE patient_location = ?");
+                            $total_patients_stmt->bind_param("s", $user_branch);
+                            $total_patients_stmt->execute();
+                            $total_patients_result = $total_patients_stmt->get_result();
+                            $total_patients_fetch = $total_patients_result->fetch_assoc();
+                            $total_patients_stmt->close();
 
-                        // Role-specific counts for Staffs and Ill Staffs
-                        if ($user_role === 'super-admin') {
-                            // 1. Count total staffs (Global)
-                            $total_staffs_query = mysqli_query($conn, "SELECT COUNT(*) AS total_staffs FROM staffs");
-                            $total_staffs_fetch = mysqli_fetch_assoc($total_staffs_query);
-                            $total_staffs = $total_staffs_fetch['total_staffs'] ?? 0;
+                            $card1_count = $total_patients_fetch['total_patients'] ?? 0;
 
-                            // 2. Count ill staffs (Global)
-                            $ill_query = "SELECT COUNT(*) AS total_ill FROM staff_medical_records WHERE LOWER(TRIM(record_status)) IN ('open', 'under_treatment')";
-                            $ill_stmt = $conn->prepare($ill_query);
+                            $card1_title = "Patients";
+                            $card1_link = "patient_medical_records.php";
+
+                            // 2. Locations (from outreach table)
+                            $total_locations_query = mysqli_query($conn, "SELECT COUNT(*) AS total_locations FROM outreach");
+                            $total_locations_fetch = mysqli_fetch_assoc($total_locations_query);
+                            $card2_count = $total_locations_fetch['total_locations'] ?? 0;
+
+                            $card2_title = "Locations";
+                            $card2_link = "outreach.php";
+
+                            // 3. Treated Patients (from patient_medical_records where record_status is closed) filtered by logged-in user branch/location
+                            $treated_stmt = $conn->prepare("SELECT COUNT(*) AS total_treated FROM patient_medical_records WHERE LOWER(TRIM(record_status)) = 'closed' AND patient_location = ?");
+                            $treated_stmt->bind_param("s", $user_branch);
+                            $treated_stmt->execute();
+                            $treated_result = $treated_stmt->get_result();
+                            $treated_fetch = $treated_result->fetch_assoc();
+                            $treated_stmt->close();
+
+                            $card3_count = $treated_fetch['total_treated'] ?? 0;
+
+                            $card3_title = "Treated Patients";
+                            $card3_link = "treated_patients.php";
                         } else {
-                            // 1. Count total staffs (Branch Scoped)
-                            $staff_stmt = $conn->prepare("SELECT COUNT(*) AS total_staffs FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id WHERE LOWER(TRIM(b.branch_name)) = LOWER(TRIM(?)) OR s.branch_id = ?");
-                            $staff_stmt->bind_param("ss", $user_branch, $user_branch);
-                            $staff_stmt->execute();
-                            $total_staffs_fetch = $staff_stmt->get_result()->fetch_assoc();
-                            $total_staffs = $total_staffs_fetch['total_staffs'] ?? 0;
-                            $staff_stmt->close();
+                            // GLOBAL COUNT: Total Branches is now ALWAYS pulled system-wide regardless of role
+                            $total_branches_query = mysqli_query($conn, "SELECT COUNT(*) AS total_branches FROM branches");
+                            $total_branches_fetch = mysqli_fetch_assoc($total_branches_query);
+                            $card2_count = $total_branches_fetch['total_branches'] ?? 0;
 
-                            // 2. Count ill staffs (Branch Scoped)
-                            $ill_query = "SELECT COUNT(*) AS total_ill FROM staff_medical_records WHERE LOWER(TRIM(record_status)) IN ('open', 'under_treatment') AND LOWER(TRIM(staff_branch)) = LOWER(TRIM(?))";
-                            $ill_stmt = $conn->prepare($ill_query);
-                            $ill_stmt->bind_param("s", $user_branch);
+                            $card2_title = "Total Branches";
+                            $card2_link = "branches.php";
+
+                            // Role-specific counts for Staffs and Ill Staffs
+                            if ($user_role === 'super-admin') {
+                                // 1. Count total staffs (Global)
+                                $total_staffs_query = mysqli_query($conn, "SELECT COUNT(*) AS total_staffs FROM staffs");
+                                $total_staffs_fetch = mysqli_fetch_assoc($total_staffs_query);
+                                $card1_count = $total_staffs_fetch['total_staffs'] ?? 0;
+
+                                // 2. Count ill staffs (Global)
+                                $ill_query = "SELECT COUNT(*) AS total_ill FROM staff_medical_records WHERE LOWER(TRIM(record_status)) IN ('open', 'under_treatment')";
+                                $ill_stmt = $conn->prepare($ill_query);
+                            } else {
+                                // 1. Count total staffs (Branch Scoped)
+                                $staff_stmt = $conn->prepare("SELECT COUNT(*) AS total_staffs FROM staffs s LEFT JOIN branches b ON s.branch_id = b.id WHERE LOWER(TRIM(b.branch_name)) = LOWER(TRIM(?)) OR s.branch_id = ?");
+                                $staff_stmt->bind_param("ss", $user_branch, $user_branch);
+                                $staff_stmt->execute();
+                                $total_staffs_fetch = $staff_stmt->get_result()->fetch_assoc();
+                                $card1_count = $total_staffs_fetch['total_staffs'] ?? 0;
+                                $staff_stmt->close();
+
+                                // 2. Count ill staffs (Branch Scoped)
+                                $ill_query = "SELECT COUNT(*) AS total_ill FROM staff_medical_records WHERE LOWER(TRIM(record_status)) IN ('open', 'under_treatment') AND LOWER(TRIM(staff_branch)) = LOWER(TRIM(?))";
+                                $ill_stmt = $conn->prepare($ill_query);
+                                $ill_stmt->bind_param("s", $user_branch);
+                            }
+
+                            $ill_stmt->execute();
+                            $ill_staffs_fetch = $ill_stmt->get_result()->fetch_assoc();
+                            $card3_count = $ill_staffs_fetch['total_ill'] ?? 0;
+                            $ill_stmt->close();
+
+                            $card1_title = "Registered Staffs";
+                            $card1_link = "staffs.php";
+                            $card3_title = "Ill Staffs";
+                            $card3_link = "ill_staffs.php";
                         }
-
-                        $ill_stmt->execute();
-                        $ill_staffs_fetch = $ill_stmt->get_result()->fetch_assoc();
-                        $ill_staffs = $ill_staffs_fetch['total_ill'] ?? 0;
-                        $ill_stmt->close();
                         ?>
 
                         <div class="row">
-                            <!-- Registered Staffs Card -->
+                            <!-- Card 1 -->
                             <div class="col-6 col-lg-4 col-md-6">
-                                <a href="staffs.php" class="card-link">
+                                <a href="<?php echo htmlspecialchars($card1_link); ?>" class="card-link">
                                     <div class="card">
                                         <div class="card-body px-3 py-4-5">
                                             <div class="row">
@@ -113,9 +158,9 @@ if (!isset($_SESSION['user_id'])) {
                                                     </div>
                                                 </div>
                                                 <div class="col-md-8">
-                                                    <h6 class="text-muted font-semibold">Registered Staffs</h6>
+                                                    <h6 class="text-muted font-semibold"><?php echo htmlspecialchars($card1_title); ?></h6>
                                                     <h6 class="font-extrabold mb-0">
-                                                        <?php echo number_format($total_staffs); ?>
+                                                        <?php echo number_format($card1_count); ?>
                                                     </h6>
                                                 </div>
                                             </div>
@@ -124,9 +169,9 @@ if (!isset($_SESSION['user_id'])) {
                                 </a>
                             </div>
 
-                            <!-- Total Branches Card (Global Count) -->
+                            <!-- Card 2 -->
                             <div class="col-6 col-lg-4 col-md-6">
-                                <a href="branches.php" class="card-link">
+                                <a href="<?php echo htmlspecialchars($card2_link); ?>" class="card-link">
                                     <div class="card">
                                         <div class="card-body px-3 py-4-5">
                                             <div class="row">
@@ -136,9 +181,9 @@ if (!isset($_SESSION['user_id'])) {
                                                     </div>
                                                 </div>
                                                 <div class="col-md-8">
-                                                    <h6 class="text-muted font-semibold">Total Branches</h6>
+                                                    <h6 class="text-muted font-semibold"><?php echo htmlspecialchars($card2_title); ?></h6>
                                                     <h6 class="font-extrabold mb-0">
-                                                        <?php echo number_format($total_branches); ?>
+                                                        <?php echo number_format($card2_count); ?>
                                                     </h6>
                                                 </div>
                                             </div>
@@ -147,9 +192,9 @@ if (!isset($_SESSION['user_id'])) {
                                 </a>
                             </div>
 
-                            <!-- Ill Staffs / Medical Logs Card -->
+                            <!-- Card 3 -->
                             <div class="col-6 col-lg-4 col-md-6">
-                                <a href="ill_staffs.php" class="card-link">
+                                <a href="<?php echo htmlspecialchars($card3_link); ?>" class="card-link">
                                     <div class="card">
                                         <div class="card-body px-3 py-4-5">
                                             <div class="row">
@@ -159,9 +204,9 @@ if (!isset($_SESSION['user_id'])) {
                                                     </div>
                                                 </div>
                                                 <div class="col-md-8">
-                                                    <h6 class="text-muted font-semibold">Ill Staffs</h6>
+                                                    <h6 class="text-muted font-semibold"><?php echo htmlspecialchars($card3_title); ?></h6>
                                                     <h6 class="font-extrabold mb-0">
-                                                        <?php echo number_format($ill_staffs); ?>
+                                                        <?php echo number_format($card3_count); ?>
                                                     </h6>
                                                 </div>
                                             </div>
@@ -171,19 +216,21 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                         </div>
 
-                        <!-- Chart 1: Volume Column Block -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h4>Medical Records Volume by Branch</h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="chart-medical-volume"></div>
+                        <?php if ($user_role !== 'adhoc-user'): ?>
+                            <!-- Chart 1: Volume Column Block -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h4>Medical Records Volume by Branch</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="chart-medical-volume"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="col-12 col-lg-4">
@@ -218,18 +265,22 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                         </div>
 
-                        <!-- Chart 2: Status Tracker Donut Block -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>Case Status Tracker</h4>
+                        <?php if ($user_role !== 'adhoc-user'): ?>
+                            <!-- Chart 2: Status Tracker Donut Block -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4>Case Status Tracker</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-case-status" class="d-flex justify-content-center"></div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div id="chart-case-status" class="d-flex justify-content-center"></div>
-                            </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
+
                 </section>
             </div>
+
 
             <!-- Include ApexCharts Scripts Dependency Once -->
             <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -255,6 +306,22 @@ if (!isset($_SESSION['user_id'])) {
                                 enabled: true,
                                 easing: 'easeinout',
                                 speed: 600
+                            },
+                            events: {
+                                dataPointSelection: function(event, chartContext, config) {
+                                    const dataIndex = config.dataPointIndex;
+                                    const w = chartContext.w;
+
+                                    // Grab the branch ID or fallback to the branch name label
+                                    const branchId = w.config.series[config.seriesIndex].branchIds ? w.config.series[config.seriesIndex].branchIds[dataIndex] : null;
+                                    const branchName = w.globals.labels[dataIndex];
+
+                                    if (branchId) {
+                                        window.location.href = `branch-details.php?branch_id=${encodeURIComponent(branchId)}`;
+                                    } else if (branchName) {
+                                        window.location.href = `medical-records.php?branch=${encodeURIComponent(branchName)}`;
+                                    }
+                                }
                             }
                         },
                         plotOptions: {
@@ -312,7 +379,7 @@ if (!isset($_SESSION['user_id'])) {
                             theme: 'dark',
                             y: {
                                 formatter: function(val) {
-                                    return val + " Intake Records";
+                                    return val + " Intake Records (Click bar to open branch details)";
                                 }
                             }
                         }
@@ -328,7 +395,8 @@ if (!isset($_SESSION['user_id'])) {
                                 if (data.success) {
                                     volumeChart.updateSeries([{
                                         name: 'Total Records',
-                                        data: data.counts
+                                        data: data.counts,
+                                        branchIds: data.branch_ids || []
                                     }]);
                                     volumeChart.updateOptions({
                                         xaxis: {
@@ -354,6 +422,19 @@ if (!isset($_SESSION['user_id'])) {
                             animations: {
                                 enabled: true,
                                 speed: 500
+                            },
+                            events: {
+                                dataPointSelection: function(event, chartContext, config) {
+                                    // Map the clicked index to its corresponding status string
+                                    const selectedIndex = config.dataPointIndex;
+                                    const statusMapping = ['open', 'under_treatment', 'closed'];
+                                    const targetStatus = statusMapping[selectedIndex];
+
+                                    if (targetStatus) {
+                                        // Redirect to your target page with the status filter parameter
+                                        window.location.href = `medical-records.php?status=${targetStatus}`;
+                                    }
+                                }
                             }
                         },
                         labels: ['Open Cases', 'Under Treatment', 'Resolved / Closed'],
@@ -363,6 +444,9 @@ if (!isset($_SESSION['user_id'])) {
                             fontFamily: 'inherit',
                             labels: {
                                 colors: '#6c757d'
+                            },
+                            onItemClick: {
+                                toggleDataSeries: false // Prevents hiding/showing the slice so click handling stays smooth
                             }
                         },
                         dataLabels: {
@@ -426,7 +510,6 @@ if (!isset($_SESSION['user_id'])) {
                     setInterval(fetchStatusMetrics, 5000);
                 });
             </script>
-
             <?php
             include('./inc/footer.php');
             ?>
