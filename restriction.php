@@ -77,11 +77,11 @@
                 <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
                     <i class="bi bi-hospital-fill"></i>
                 </div>
-                <span class="fw-bold fs-5 text-dark tracking-tight">Medical<span class="text-primary">Unit</span></span>
+                <span class="fw-bold fs-5 text-dark tracking-tight">Medical<span class="text-primary">s</span></span>
             </a>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted small d-none d-sm-inline">Already have an active license?</span>
-                <a href="auth-login.php" class="btn btn-outline-primary btn-sm fw-semibold rounded-pill px-3">Sign In</a>
+                <a href="restriction.php" class="btn btn-outline-primary btn-sm fw-semibold rounded-pill px-3">Sign In</a>
             </div>
         </div>
     </nav>
@@ -139,7 +139,7 @@
     <!-- Minimal Footer -->
     <footer class="py-3 bg-black border-top text-center text-white small">
         <div class="container">
-            &copy; 2026 Medical Unit Suite. All rights reserved. Secure Medical Management Infrastructure.
+            &copy; 2026 Medicals. All rights reserved. Secure Medical Management Infrastructure.
         </div>
     </footer>
 
