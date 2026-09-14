@@ -37,6 +37,7 @@ if ($_SESSION['role'] !== 'super-admin') {
     <link rel="stylesheet" href="assets/css/bootstrap.css">
 
     <link rel="stylesheet" href="assets/vendors/simple-datatables/style.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
 
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">

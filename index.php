@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.png">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -43,7 +45,7 @@
             color: #1e40af;
             font-weight: 600;
             font-size: 0.85rem;
-            padding: 6px 14px;
+            /* padding: 6px 14px; */
             border-radius: 50rem;
         }
 
@@ -119,11 +121,13 @@
     <!-- Header / Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                    <i class="bi bi-hospital-fill"></i>
-                </div>
-                <span class="fw-bold fs-4 text-dark tracking-tight">Medical<span class="text-primary">s</span></span>
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img
+                    src="./admin/dashboard/assets/images/logo/Gemini_Generated_Image_mrlvttmrlvttmrlv-removebg-preview.png"
+                    alt="Logo"
+                    height="400"
+                    class="img-fluid"
+                    style="max-width: 80px;">
             </a>
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -144,6 +148,7 @@
     </nav>
 
     <!-- Hero Section -->
+    <br>
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center g-5">
@@ -357,6 +362,7 @@
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Priority 24/7 Technical Support</li>
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Advanced Audit & Stock Analytics</li>
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Automated Cloud Backups & Updates</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> No Maintenance & Customization</li>
                             </ul>
                         </div>
                         <a href="checkout.php?plan=annual" class="btn btn-outline-primary fw-bold rounded-pill py-2 w-100">Choose Annual Plan</a>
@@ -377,6 +383,7 @@
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Automated Multi-Drug Dispensing</li>
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Standard Cloud Hosting</li>
                                 <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> Standard Email Support</li>
+                                <li class="d-flex align-items-center gap-2 text-dark small"><i class="bi bi-check-circle-fill text-success"></i> No Maintenance & Customization</li>
                             </ul>
                         </div>
                         <a href="checkout.php?plan=monthly" class="btn btn-outline-dark fw-bold rounded-pill py-2 w-100">Get Started Monthly</a>
@@ -526,10 +533,15 @@
             <div class="row g-4 justify-content-between align-items-center">
                 <div class="col-md-6">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                            <i class="bi bi-hospital-fill"></i>
-                        </div>
-                        <span class="fw-bold fs-5 text-white tracking-tight">Medical<span class="text-primary">s</span></span>
+                        <a class="navbar-brand d-flex align-items-center" href="#">
+                            <img
+                                src="./admin/dashboard/assets/images/logo/Gemini_Generated_Image_mrlvttmrlvttmrlv-removebg-preview.png"
+                                alt="Logo"
+                                height="400"
+                                class="img-fluid"
+                                style="max-width: 100px;">
+                        </a>
+
                     </div>
                     <p class="text-white small mb-0">Enterprise-grade clinic operations management suite built for maximum compliance, cross-branch tracking, and pharmaceutical vault security.</p>
                 </div>

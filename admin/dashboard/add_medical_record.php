@@ -27,6 +27,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon">
 </head>
 
@@ -343,7 +344,7 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById('companyInput').value = company;
         });
     </script>
-    
+
     <script src="assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
 

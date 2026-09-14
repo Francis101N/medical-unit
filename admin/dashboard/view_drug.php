@@ -65,6 +65,7 @@ $stock_class = $quantity > 10 ? 'bg-success-subtle text-success' : 'bg-danger-su
     <!-- Include Bootstrap CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <style>
         body {
             background-color: #f8f9fa;

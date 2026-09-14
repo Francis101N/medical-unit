@@ -46,8 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.png">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF Library v2.5.1 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #0d6efd;
@@ -102,11 +106,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Top Navigation Minimal Bar -->
     <nav class="navbar navbar-light bg-white border-bottom py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="index.php">
-                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                    <i class="bi bi-hospital-fill"></i>
-                </div>
-                <span class="fw-bold fs-5 text-dark tracking-tight">Medical<span class="text-primary">s</span></span>
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img
+                    src="./admin/dashboard/assets/images/logo/Gemini_Generated_Image_mrlvttmrlvttmrlv-removebg-preview.png"
+                    alt="Logo"
+                    height="400"
+                    class="img-fluid"
+                    style="max-width: 80px;">
             </a>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted small">Need help? <a href="mailto:support@medicals.com" class="text-primary text-decoration-none fw-semibold">Contact Support</a></span>
@@ -230,11 +236,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
             <?php else: ?>
-                <!-- BANK DETAILS & WHATSAPP CONFIRMATION VIEW -->
+                <!-- BANK DETAILS & WHATSAPP / EMAIL CONFIRMATION VIEW -->
                 <div class="text-center mb-4">
                     <span class="badge bg-success-subtle text-success fw-bold text-uppercase tracking-wider px-3 py-2 rounded-pill mb-2"><i class="bi bi-check-circle-fill me-1"></i> Order Reserved Successfully</span>
                     <h1 class="fw-bold fs-3 text-dark">Make Your Bank Transfer</h1>
-                    <p class="text-muted">Please transfer the exact amount below to our official corporate account, then click the WhatsApp button to verify.</p>
+                    <p class="text-muted">Download your invoice PDF, make your transfer, and send your confirmation via WhatsApp or Email.</p>
                 </div>
 
                 <div class="checkout-card p-4 p-md-5">
@@ -242,35 +248,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
                                 <span class="small text-muted d-block">Transaction Reference</span>
-                                <strong class="fs-5 text-primary"><?php echo $reference_id; ?></strong>
+                                <strong class="fs-5 text-primary" id="refIdText"><?php echo $reference_id; ?></strong>
                             </div>
                             <div class="text-md-end">
                                 <span class="small text-muted d-block">Selected Package</span>
-                                <span class="fw-bold text-dark"><?php echo $selected_plan['name']; ?></span>
+                                <span class="fw-bold text-dark" id="planNameText"><?php echo $selected_plan['name']; ?></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="bank-details-box p-4 mb-4 text-center">
                         <span class="text-uppercase small fw-bold text-muted tracking-wider d-block mb-1">Amount to Pay</span>
-                        <div class="display-5 fw-extrabold text-success mb-3"><?php echo $selected_plan['formatted']; ?></div>
+                        <div class="display-5 fw-extrabold text-success mb-3" id="planAmountText"><?php echo $selected_plan['formatted']; ?></div>
 
                         <hr class="my-3 opacity-25">
 
                         <div class="row text-start g-3 mt-2">
                             <div class="col-sm-6">
                                 <span class="text-muted small d-block">Bank Name</span>
-                                <strong class="fs-6 text-dark">Guaranty Trust Bank (GTB)</strong>
+                                <strong class="fs-6 text-dark">Providus Bank</strong>
                             </div>
                             <div class="col-sm-6">
                                 <span class="text-muted small d-block">Account Name</span>
-                                <strong class="fs-6 text-dark">Medical Software Ltd</strong>
+                                <strong class="fs-6 text-dark">Beaconify Limited</strong>
                             </div>
                             <div class="col-sm-12 mt-2">
                                 <span class="text-muted small d-block">Account Number</span>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="fs-4 fw-bold text-primary font-monospace bg-white px-3 py-1 border rounded" id="accNumber">0123456789</span>
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('0123456789'); alert('Account number copied!');">
+                                    <span class="fs-4 fw-bold text-primary font-monospace bg-white px-3 py-1 border rounded" id="accNumber">1307872051</span>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('1307872051'); alert('Account number copied!');">
                                         <i class="bi bi-clipboard"></i> Copy
                                     </button>
                                 </div>
@@ -282,20 +288,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="bi bi-info-circle-fill me-1"></i> <strong>Important:</strong> Use your Reference ID (<strong><?php echo $reference_id; ?></strong>) or Organization Name (<strong><?php echo htmlspecialchars($org_name); ?></strong>) as your transfer narration.
                     </div>
 
+                    <!-- Hidden data containers for jsPDF generation -->
+                    <div id="invoiceData" class="d-none"
+                        data-org="<?php echo htmlspecialchars($org_name); ?>"
+                        data-contact="<?php echo htmlspecialchars($contact_person); ?>"
+                        data-email="<?php echo htmlspecialchars($email); ?>"
+                        data-phone="<?php echo htmlspecialchars($phone); ?>"></div>
+
                     <div class="d-grid gap-2">
+                        <!-- Download PDF Button -->
+                        <button type="button" id="downloadPdfBtn" class="btn btn-dark fw-bold py-3 rounded-pill shadow-sm fs-5 d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <i class="bi bi-file-earmark-pdf-fill fs-4 text-danger"></i> Download Invoice PDF
+                        </button>
+
                         <?php
                         // Prepare WhatsApp message payload
-                        $whatsapp_number = "+2348069815240"; // Replace with your actual WhatsApp business line
-                        $wa_message = "Hello Medicals Support,\n\nI have completed my bank transfer for the software license.\n\n" .
+                        $whatsapp_number = "+2347010010811"; // Replace with your actual WhatsApp business line
+                        $wa_message = "Hello Medicals Support,\n\nI have generated my invoice and completed my bank transfer for the software license.\n\n" .
                             "• Ref: {$reference_id}\n" .
                             "• Org: {$org_name}\n" .
                             "• Contact: {$contact_person}\n" .
+                            "• Email: {$email}\n" .
+                            "• Phone: {$phone}\n" .
                             "• Package: {$selected_plan['name']} ({$selected_plan['formatted']})\n\n" .
-                            "Attached is my payment receipt for confirmation.";
+                            "I have downloaded my official invoice PDF and attached/forwarded it along with my payment receipt here for confirmation.";
                         $wa_url = "https://wa.me/" . preg_replace('/[^0-9]/', '', $whatsapp_number) . "?text=" . urlencode($wa_message);
+
+                        // Prepare Email payload
+                        $email_recipient = "accounts@beaconifyglobal.com";
+                        $email_subject = "Payment Receipt - " . $reference_id . " - " . $org_name;
+                        $email_body = "Hello Medicals Support,\n\nI the organization " . $org_name . " have completed my bank transfer for the software license.\n\n" .
+                            "• Ref: " . $reference_id . "\n" .
+                            "• Org: " . $org_name . "\n" .
+                            "• Contact: " . $contact_person . "\n" .
+                            "• Email: " . $email . "\n" .
+                            "• Phone: " . $phone . "\n" .
+                            "• Package: " . $selected_plan['name'] . " (" . $selected_plan['formatted'] . ")\n\n" .
+                            "Please find my downloaded invoice PDF and payment receipt attached for confirmation.";
+                        $email_url = "mailto:" . $email_recipient . "?subject=" . urlencode($email_subject) . "&body=" . urlencode($email_body);
                         ?>
                         <a href="<?php echo $wa_url; ?>" target="_blank" class="btn btn-success fw-bold py-3 rounded-pill shadow-sm fs-5 d-flex align-items-center justify-content-center gap-2">
-                            <i class="bi bi-whatsapp fs-4"></i> Send Payment Receipt on WhatsApp
+                            <i class="bi bi-whatsapp fs-4"></i> Send Invoice & Receipt on WhatsApp
+                        </a>
+                        <a href="<?php echo $email_url; ?>" class="btn btn-outline-primary fw-bold py-3 rounded-pill shadow-sm fs-5 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-envelope-at fs-4"></i> Send Receipt via Email
                         </a>
                         <a href="checkout.php" class="btn btn-outline-secondary fw-semibold py-2 rounded-pill mt-2">
                             <i class="bi bi-arrow-left me-1"></i> Start New Order / Reset Form
@@ -317,9 +353,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Dynamic Plan Selector Script from Landing Page -->
+    <!-- Bulletproof jsPDF Initialization & Fallback Download Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', function() {
+            // Plan Selector Query String Handler
             const urlParams = new URLSearchParams(window.location.search);
             const planParam = urlParams.get('plan');
 
@@ -329,8 +366,141 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     targetRadio.checked = true;
                 }
             }
+
+            const downloadBtn = document.getElementById('downloadPdfBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Check if jsPDF loaded successfully
+                    if (typeof window.jspdf === 'undefined') {
+                        alert('jsPDF library failed to load from CDN. Please check your internet connection or adblocker settings.');
+                        return;
+                    }
+
+                    try {
+                        const {
+                            jsPDF
+                        } = window.jspdf;
+                        const doc = new jsPDF({
+                            orientation: 'portrait',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+
+                        const refId = document.getElementById('refIdText').innerText.trim();
+                        const planName = document.getElementById('planNameText').innerText.trim();
+                        const planAmount = document.getElementById('planAmountText').innerText.trim();
+
+                        const invoiceData = document.getElementById('invoiceData');
+                        const orgName = invoiceData ? invoiceData.getAttribute('data-org') : '';
+                        const contact = invoiceData ? invoiceData.getAttribute('data-contact') : '';
+                        const email = invoiceData ? invoiceData.getAttribute('data-email') : '';
+                        const phone = invoiceData ? invoiceData.getAttribute('data-phone') : '';
+
+                        // Header Background Bar (RGB)
+                        doc.setFillColor(13, 110, 253);
+                        doc.rect(0, 0, 210, 35, 'F');
+
+                        // Header Title
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(20);
+                        doc.text("MEDICALS MANAGEMENT SYSTEM", 14, 22);
+
+                        doc.setFontSize(9);
+                        doc.text("OFFICIAL INVOICE", 150, 22);
+
+                        // Metadata Section
+                        doc.setTextColor(51, 65, 85);
+                        doc.setFontSize(10);
+                        doc.setFont("helvetica", "normal");
+
+                        let startY = 48;
+                        doc.text("Reference ID: " + refId, 14, startY);
+                        doc.text("Date: " + new Date().toLocaleDateString(), 150, startY);
+
+                        startY += 8;
+                        doc.text("Organization: " + orgName, 14, startY);
+                        startY += 7;
+                        doc.text("Contact Person: " + contact, 14, startY);
+                        startY += 7;
+                        doc.text("Email: " + email, 14, startY);
+                        startY += 7;
+                        doc.text("Phone: " + phone, 14, startY);
+
+                        // Table Headers
+                        startY += 12;
+                        doc.setFillColor(241, 245, 249);
+                        doc.rect(14, startY, 182, 10, 'F');
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Item Description", 18, startY + 7);
+                        doc.text("Total", 170, startY + 7);
+
+                        // Table Content
+                        startY += 12;
+                        doc.setFont("helvetica", "normal");
+                        doc.text(planName, 18, startY + 4);
+                        doc.text(planAmount, 170, startY + 4);
+
+                        // Divider Line (Removed setLineColor to prevent build mismatch errors)
+                        startY += 12;
+                        doc.setLineWidth(0.4);
+                        doc.line(14, startY, 196, startY);
+
+                        // Total Due Section
+                        startY += 10;
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(13);
+                        doc.text("Amount Due: " + planAmount, 125, startY + 5);
+
+                        // Bank Details Box
+                        startY += 18;
+                        doc.setFillColor(248, 250, 252);
+                        doc.roundedRect(14, startY, 182, 32, 3, 3, 'FD');
+
+                        doc.setFontSize(9);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text("DIRECT BANK TRANSFER INSTRUCTIONS", 18, startY + 7);
+
+                        doc.setTextColor(51, 65, 85);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Bank Name: Providus Bank", 18, startY + 14);
+                        doc.text("Account Name: Beaconify Limited", 18, startY + 21);
+                        doc.text("Account Number: 1307872051", 18, startY + 28);
+
+                        // Footer Notes
+                        startY += 42;
+                        doc.setFont("helvetica", "italic");
+                        doc.setFontSize(8);
+                        doc.setTextColor(148, 163, 184);
+                        doc.text("Please use your Reference ID or Organization Name as narration when making your transfer.", 14, startY);
+                        doc.text("Send your payment receipt and this invoice PDF via WhatsApp or email to activate your license.", 14, startY + 5);
+
+                        // Trigger download
+                        try {
+                            doc.save("Invoice_" + refId + ".pdf");
+                        } catch (saveErr) {
+                            const pdfBlob = doc.output('blob');
+                            const blobUrl = URL.createObjectURL(pdfBlob);
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = blobUrl;
+                            downloadLink.download = "Invoice_" + refId + ".pdf";
+                            document.body.appendChild(downloadLink);
+                            downloadLink.click();
+                            document.body.removeChild(downloadLink);
+                            URL.revokeObjectURL(blobUrl);
+                        }
+
+                    } catch (err) {
+                        console.error("PDF Generation Error Details:", err);
+                        alert("An error occurred while generating the PDF. Check browser console for details.");
+                    }
+                });
+            }
         });
     </script>
+
 </body>
 
 </html>

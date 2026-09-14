@@ -31,6 +31,7 @@ include('db.php');
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon">
 </head>
 
@@ -146,14 +147,14 @@ include('db.php');
                                                     <div class="form-group mb-4">
                                                         <label class="form-label fw-bold">Start Date</label>
                                                         <input type="date" name="start_date"
-                                                            class="form-control form-control-lg shadow-sm" >
+                                                            class="form-control form-control-lg shadow-sm">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group mb-4">
                                                         <label class="form-label fw-bold">End Date</label>
                                                         <input type="date" name="end_date"
-                                                            class="form-control form-control-lg shadow-sm" >
+                                                            class="form-control form-control-lg shadow-sm">
                                                     </div>
                                                 </div>
                                             </div>

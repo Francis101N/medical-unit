@@ -101,6 +101,7 @@ $status_class = match ($record_status) {
     <title>View Medical Log - <?php echo htmlspecialchars($log['staff_name']); ?></title>
     <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <style>
         body {
             background-color: #f8f9fa;

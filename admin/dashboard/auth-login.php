@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="assets/css/pages/auth.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
@@ -20,7 +21,12 @@
             <div class="col-lg-6 col-12">
                 <div id="auth-left">
                     <div class="auth-logo">
-                        <a href=""><img src="assets/images/logo/logo.png" alt="Logo"></a>
+                        <a href=""> <img
+                                src="./assets/images/logo/Gemini_Generated_Image_mrlvttmrlvttmrlv-removebg-preview.png"
+                                alt="Logo"
+                                height="400"
+                                class="img-fluid"
+                                style="max-width: 100px;"></a>
                     </div>
                     <h1 class="auth-title">Log in.</h1>
                     <p class="auth-subtitle mb-5">Log in with your data that you entered during registration.</p>
@@ -72,7 +78,7 @@
                         <!-- <p class="text-gray-600">Don't have an account? <a href="auth-register.html"
                                 class="font-bold">Sign
                                 up</a>.</p> -->
-                        <p><a class="font-bold" href="auth-forgot-password">Forgot password?</a>.</p>
+                        <!-- <p><a class="font-bold" href="auth-forgot-password">Forgot password?</a>.</p> -->
                     </div>
                 </div>
             </div>

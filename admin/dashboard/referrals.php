@@ -98,6 +98,7 @@ $selected_branch = isset($_GET['branch']) ? trim($_GET['branch']) : '';
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon">
 </head>
 <style>

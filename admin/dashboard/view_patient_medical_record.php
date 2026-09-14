@@ -57,6 +57,7 @@ if (!$record) {
     <link rel="stylesheet" href="assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon">
 </head>
 <style>
@@ -172,16 +173,16 @@ if (!$record) {
                             <div class="card record-card p-4 text-center mb-4">
                                 <div class="d-flex justify-content-center mb-3">
                                     <div class="patient-avatar-placeholder-lg">
-                                        <?php 
-                                            $name_parts = explode(' ', trim($record['patient_name'] ?? 'U'));
-                                            $initials = strtoupper(substr($name_parts[0], 0, 1) . (isset($name_parts[1]) ? substr($name_parts[1], 0, 1) : ''));
-                                            echo $initials;
+                                        <?php
+                                        $name_parts = explode(' ', trim($record['patient_name'] ?? 'U'));
+                                        $initials = strtoupper(substr($name_parts[0], 0, 1) . (isset($name_parts[1]) ? substr($name_parts[1], 0, 1) : ''));
+                                        echo $initials;
                                         ?>
                                     </div>
                                 </div>
                                 <h4 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($record['patient_name'] ?? 'N/A'); ?></h4>
                                 <p class="text-primary fw-semibold small mb-2"><i class="bi bi-geo-alt-fill"></i> <?php echo htmlspecialchars($record['patient_location'] ?? 'N/A'); ?></p>
-                                
+
                                 <div class="mb-3">
                                     <span class="badge bg-<?php echo ($record['record_status'] == 'open' ? 'success' : 'secondary'); ?> badge-status text-uppercase">
                                         Status: <?php echo htmlspecialchars($record['record_status'] ?? 'open'); ?>

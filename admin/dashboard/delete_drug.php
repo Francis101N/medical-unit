@@ -91,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_delete'])) {
     <link rel="stylesheet" href="assets/css/bootstrap.css">
     <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.png">
     <style>
         .danger-card {
             border-radius: 16px;

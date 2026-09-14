@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.png">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -73,11 +75,13 @@
     <!-- Top Navigation Minimal Bar -->
     <nav class="navbar navbar-light bg-white border-bottom py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="index.php">
-                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                    <i class="bi bi-hospital-fill"></i>
-                </div>
-                <span class="fw-bold fs-5 text-dark tracking-tight">Medical<span class="text-primary">s</span></span>
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img
+                    src="./admin/dashboard/assets/images/logo/Gemini_Generated_Image_mrlvttmrlvttmrlv-removebg-preview.png"
+                    alt="Logo"
+                    height="400"
+                    class="img-fluid"
+                    style="max-width: 80px;">
             </a>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted small d-none d-sm-inline">Already have an active license?</span>
@@ -119,7 +123,7 @@
                 <a href="index.php#pricing" class="btn btn-primary fw-bold py-2.5 px-4 rounded-pill shadow-sm">
                     <i class="bi bi-cart-check-fill me-2"></i>Select Plan & Make Payment
                 </a>
-                <a href="mailto:support@medicalunit.com?subject=Request%20for%201-Week%20Demo%20Access" class="btn btn-outline-primary fw-bold py-2.5 px-4 rounded-pill">
+                <a href="mailto:contact@beaconifyglobal.com?subject=Request%20for%201-Week%20Demo%20Access" class="btn btn-outline-primary fw-bold py-2.5 px-4 rounded-pill">
                     <i class="bi bi-laptop me-2"></i>Request 1-Week Demo
                 </a>
                 <a href="index.php" class="btn btn-light fw-semibold py-2.5 px-4 rounded-pill border text-dark">
@@ -130,7 +134,7 @@
             <hr class="my-4 text-muted opacity-25">
 
             <div class="text-muted small">
-                Need enterprise assistance or custom deployment contracts? <a href="mailto:support@medicalunit.com" class="text-primary text-decoration-none fw-semibold">Contact Support Team</a>
+                Need enterprise assistance or custom deployment contracts? <a href="mailto:contact@beaconifyglobal.com" class="text-primary text-decoration-none fw-semibold">Contact Support Team</a>
             </div>
 
         </div>
